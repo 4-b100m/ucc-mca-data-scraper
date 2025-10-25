@@ -1,129 +1,128 @@
 import { useState } from 'react'
 import {
-  SheetC
+  Sheet,
   SheetContent,
-} from '@/component
-import { Label
-import { Slid
-import { Funnel
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Slider } from '@/components/ui/slider'
+import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
+import { FunnelSimple } from '@phosphor-icons/react'
+import { HealthGrade, ProspectStatus, SignalType } from '@/lib/types'
 
+export interface AdvancedFilterState {
   healthGrades: HealthGrade[]
   statuses: ProspectStatus[]
+  signalTypes: SignalType[]
+  sentimentTrends: ('improving' | 'stable' | 'declining')[]
+  minSignalCount: number
   defaultAgeRange: [number, number]
-  sentimentTrends: ('improving' | 'stable' | 'd
+  revenueRange: [number, number]
+  hasViolations: boolean | null
 }
+
 export const initialFilters: AdvancedFilterState = {
+  healthGrades: [],
+  statuses: [],
   signalTypes: [],
-
+  sentimentTrends: [],
   minSignalCount: 0,
+  defaultAgeRange: [0, 7],
+  revenueRange: [0, 10000000],
   hasViolations: null
+}
 
-  filters: AdvancedFilterSta
+interface AdvancedFiltersProps {
+  filters: AdvancedFilterState
+  onFiltersChange: (filters: AdvancedFilterState) => void
   activeFilterCount: number
+}
 
-  const [open, setOpen] 
+export function AdvancedFilters({ filters, onFiltersChange, activeFilterCount }: AdvancedFiltersProps) {
+  const [open, setOpen] = useState(false)
+  const [localFilters, setLocalFilters] = useState<AdvancedFilterState>(filters)
 
-    onFiltersChange(localFilter
- 
+  const handleApply = () => {
+    onFiltersChange(localFilters)
+    setOpen(false)
+  }
 
+  const handleReset = () => {
+    setLocalFilters(initialFilters)
     onFiltersChange(initialFilters)
   }
-  const toggleHeal
+
+  const toggleHealthGrade = (grade: HealthGrade) => {
+    setLocalFilters(prev => ({
       ...prev,
-        ? prev.healthGrades.fi
+      healthGrades: prev.healthGrades.includes(grade)
+        ? prev.healthGrades.filter(g => g !== grade)
+        : [...prev.healthGrades, grade]
     }))
+  }
 
-    setLocalFilters(pr
-      statuses: prev.
- 
-
-  const toggleSignalType = (type
+  const toggleStatus = (status: ProspectStatus) => {
+    setLocalFilters(prev => ({
       ...prev,
+      statuses: prev.statuses.includes(status)
+        ? prev.statuses.filter(s => s !== status)
+        : [...prev.statuses, status]
+    }))
+  }
+
+  const toggleSignalType = (type: SignalType) => {
+    setLocalFilters(prev => ({
+      ...prev,
+      signalTypes: prev.signalTypes.includes(type)
         ? prev.signalTypes.filter(t => t !== type)
+        : [...prev.signalTypes, type]
     }))
+  }
 
-
+  const toggleSentimentTrend = (trend: 'improving' | 'stable' | 'declining') => {
+    setLocalFilters(prev => ({
+      ...prev,
       sentimentTrends: prev.sentimentTrends.includes(trend)
-        : [...prev.sentimentTrends, trend
-  }
-
-      <SheetTrigger asChild>
-          <FunnelSimple size={18}
-          {activeF
-   
-
-      </SheetTrigger>
-        <SheetHeader>
-          <SheetDescription>
-          </SheetD
-
-
-            <div className="flex flex-wrap gap-2">
-                <Button
-              
-                  onClick={() => toggleHealthGrade(gr
-                  Grade {grade}
-              ))}
-    }))
-   
-
-                <div key={status} className="flex it
-                    id={`statu
-              
-                  <label
-                    className="text-sm font-mediu
-                    {status}
-       
-   
-
-            <Label>Growth Signal Types</Label>
-              {(['hiring', 'pe
-              
-                  size="sm"
-                  className="capitalize"
-                  {type}
-       
-   
-
-            <div className="flex flex-wrap gap-2">
-                <Button
-              
-                  onClick={() => toggleSentimentTrend(trend
-                >
+        ? prev.sentimentTrends.filter(t => t !== trend)
         : [...prev.sentimentTrends, trend]
-       
+    }))
   }
 
-          
-                onValueChange={([val]) => setL
-                step={1}
-              />
-                {localFilters.minSignalCount}+
-            </div>
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button variant="outline" className="relative">
+          <FunnelSimple size={18} weight="bold" className="mr-2" />
+          Advanced Filters
           {activeFilterCount > 0 && (
-            <Label>Default Age (Years)</Label>
-              <Slider
-                onVa
+            <Badge className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center">
+              {activeFilterCount}
+            </Badge>
           )}
-                m
+        </Button>
       </SheetTrigger>
-              </Badge>
+      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
-          <div className="space-y-3">
+          <SheetTitle>Advanced Filters</SheetTitle>
           <SheetDescription>
-                value={localFilters.revenueRange}
-                max={10000000
-                classN
+            Refine your prospect search with advanced filtering options
+          </SheetDescription>
+        </SheetHeader>
 
-                ${(localFilters.revenueR
-            </div>
-
+        <div className="mt-6 space-y-6">
+          <div className="space-y-3">
+            <Label>Health Grade</Label>
             <div className="flex flex-wrap gap-2">
-              <Button
+              {(['A', 'B', 'C', 'D', 'F'] as HealthGrade[]).map(grade => (
                 <Button
-              >
-              </Button>
-                variant={lo
+                  key={grade}
+                  variant={localFilters.healthGrades.includes(grade) ? 'default' : 'outline'}
+                  size="sm"
                   onClick={() => toggleHealthGrade(grade)}
                 >
                   Grade {grade}
@@ -246,7 +245,7 @@ export const initialFilters: AdvancedFilterState = {
                 onClick={() => setLocalFilters(prev => ({ ...prev, hasViolations: prev.hasViolations === false ? null : false }))}
               >
                 No Violations
-
+              </Button>
               <Button
                 variant={localFilters.hasViolations === true ? 'default' : 'outline'}
                 size="sm"
@@ -254,20 +253,19 @@ export const initialFilters: AdvancedFilterState = {
               >
                 Has Violations
               </Button>
+            </div>
+          </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+          <div className="flex gap-2 pt-4 border-t">
+            <Button onClick={handleReset} variant="outline" className="flex-1">
+              Reset
+            </Button>
+            <Button onClick={handleApply} className="flex-1">
+              Apply Filters
+            </Button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
+}
