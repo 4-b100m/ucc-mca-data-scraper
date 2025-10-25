@@ -29,13 +29,17 @@ interface ProspectDetailDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onClaim: (prospect: Prospect) => void
+  onUnclaim: (prospect: Prospect) => void
+  onExport: (prospect: Prospect) => void
 }
 
 export function ProspectDetailDialog({ 
   prospect, 
   open, 
   onOpenChange,
-  onClaim 
+  onClaim,
+  onUnclaim,
+  onExport
 }: ProspectDetailDialogProps) {
   if (!prospect) return null
 
@@ -216,9 +220,22 @@ export function ProspectDetailDialog({
               <Buildings size={20} weight="fill" className="mr-2" />
               {isClaimed ? `Claimed by ${prospect.claimedBy}` : 'Claim Lead'}
             </Button>
-            <Button size="lg" variant="outline">
+            {isClaimed && (
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={() => onUnclaim(prospect)}
+              >
+                Unclaim
+              </Button>
+            )}
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => onExport(prospect)}
+            >
               <Export size={20} weight="bold" className="mr-2" />
-              Export to CRM
+              Export
             </Button>
           </div>
         </div>
