@@ -7,10 +7,12 @@
 
 import { AgenticEngine } from './src/lib/agentic/AgenticEngine'
 import { SystemContext } from './src/lib/agentic/types'
+import { Prospect, HealthGrade, ProspectStatus } from './src/lib/types'
+import { v4 as uuidv4 } from 'uuid'
 
 // Create sample system context
 const sampleContext: SystemContext = {
-  prospects: Array(50).fill(null).map((_, i) => ({
+  prospects: Array(50).fill(null).map((_, i): Prospect => ({
     id: `prospect-${i}`,
     companyName: `Company ${i}`,
     industry: 'restaurant',
@@ -18,7 +20,7 @@ const sampleContext: SystemContext = {
     priorityScore: Math.random() * 100,
     estimatedRevenue: i % 3 === 0 ? undefined : 500000 + Math.random() * 1000000,
     healthScore: {
-      grade: 'B',
+      grade: 'B' as HealthGrade,
       score: 75,
       lastUpdated: i % 4 === 0 
         ? new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() // 10 days old
@@ -29,12 +31,19 @@ const sampleContext: SystemContext = {
       violationCount: 2
     },
     growthSignals: i % 5 === 0 ? [] : [
-      { type: 'hiring', description: 'Hiring new staff', detectedDate: new Date().toISOString(), score: 70, confidence: 0.8 }
+      { 
+        id: uuidv4(),
+        type: 'hiring', 
+        description: 'Hiring new staff', 
+        detectedDate: new Date().toISOString(), 
+        score: 70, 
+        confidence: 0.8 
+      }
     ],
     uccFilings: [],
     defaultDate: new Date().toISOString(),
     timeSinceDefault: 30,
-    status: 'new',
+    status: 'new' as ProspectStatus,
     narrative: 'Sample prospect'
   })),
   competitors: [],
@@ -56,7 +65,7 @@ const sampleContext: SystemContext = {
 
 async function runDemo() {
   console.log('🚀 Agentic Forces Demonstration\n')
-  console.log('=' .repeat(80))
+  console.log('='.repeat(80))
   console.log('\n📊 System Context:')
   console.log(`   - Prospects: ${sampleContext.prospects.length}`)
   console.log(`   - User Actions: ${sampleContext.userActions.length}`)
