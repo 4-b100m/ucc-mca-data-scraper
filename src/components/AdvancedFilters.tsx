@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import {
+  Sheet,
   Sheet,
   SheetContent,
   SheetDescription,
@@ -15,23 +15,23 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { FunnelSimple } from '@phosphor-icons/react'
 import { HealthGrade, ProspectStatus, SignalType } from '@/lib/types'
 
-export interface AdvancedFilterState {
-  healthGrades: HealthGrade[]
-  statuses: ProspectStatus[]
   signalTypes: SignalType[]
-  sentimentTrends: ('improving' | 'stable' | 'declining')[]
   minSignalCount: number
-  defaultAgeRange: [number, number]
-  revenueRange: [number, number]
-  hasViolations: boolean | null
+  revenueRange: [number, num
 }
-
 export const initialFilters: AdvancedFilterState = {
-  healthGrades: [],
   statuses: [],
-  signalTypes: [],
   sentimentTrends: [],
-  minSignalCount: 0,
+  defaultAgeRange: [0, 7],
+  hasViolations: null
+
+
+  activeFilterCount: number
+
+  const [open, 
+
+    onFiltersChange(lo
+  }
   defaultAgeRange: [0, 7],
   revenueRange: [0, 10000000],
   hasViolations: null
@@ -66,74 +66,74 @@ export function AdvancedFilters({ filters, onFiltersChange, activeFilterCount }:
     }))
   }
 
-  const toggleStatus = (status: ProspectStatus) => {
-    setLocalFilters(prev => ({
       ...prev,
-      statuses: prev.statuses.includes(status)
-        ? prev.statuses.filter(s => s !== status)
-        : [...prev.statuses, status]
+        ? prev.sentimentTrends
     }))
-  }
 
-  const toggleSignalType = (type: SignalType) => {
-    setLocalFilters(prev => ({
-      ...prev,
-      signalTypes: prev.signalTypes.includes(type)
-        ? prev.signalTypes.filter(t => t !== type)
-        : [...prev.signalTypes, type]
-    }))
-  }
-
-  const toggleSentimentTrend = (trend: 'improving' | 'stable' | 'declining') => {
-    setLocalFilters(prev => ({
-      ...prev,
-      sentimentTrends: prev.sentimentTrends.includes(trend)
-        ? prev.sentimentTrends.filter(t => t !== trend)
-        : [...prev.sentimentTrends, trend]
-    }))
-  }
-
-  return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline" className="relative glass-effect border-white/30 text-white h-8 sm:h-10 text-xs sm:text-sm px-2 sm:px-4">
-          <FunnelSimple size={16} weight="bold" className="sm:mr-2 sm:w-[18px] sm:h-[18px]" />
-          <span className="hidden sm:inline">Advanced Filters</span>
-          {activeFilterCount > 0 && (
-            <Badge className="ml-1 sm:ml-2 h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 flex items-center justify-center text-xs">
-              {activeFilterCount}
-            </Badge>
-          )}
+        <Button variant="outline" cl
+       
+   
+
         </Button>
-      </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto glass-effect border-white/30">
-        <SheetHeader>
-          <SheetTitle className="text-white">Advanced Filters</SheetTitle>
-          <SheetDescription className="text-white/70">
-            Refine your prospect search with advanced filtering options
-          </SheetDescription>
+      <SheetContent className=
+          <She
+            Refine your prospect search with advan
         </SheetHeader>
+        <div className="mt-6 space-y-
+       
+   
 
-        <div className="mt-6 space-y-6">
-          <div className="space-y-3">
-            <Label className="text-white">Health Grade</Label>
-            <div className="flex flex-wrap gap-2">
-              {(['A', 'B', 'C', 'D', 'F'] as HealthGrade[]).map(grade => (
-                <Button
-                  key={grade}
-                  variant={localFilters.healthGrades.includes(grade) ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => toggleHealthGrade(grade)}
-                  className={localFilters.healthGrades.includes(grade) ? '' : 'glass-effect border-white/30'}
-                >
-                  Grade {grade}
-                </Button>
+                  className={l
+              
               ))}
-            </div>
           </div>
-
           <div className="space-y-3">
-            <Label className="text-white">Prospect Status</Label>
+       
+   
+
+          
+                  />
+                    htmlFor=
+                  >
+                  </label>
+              ))}
+          </div>
+          <div className="space-y-3">
+            <div className="flex 
+                <But
+            
+                 
+                >
+                </Button>
+            </div>
+
+            <Label className="text-white">Sentiment Tr
+              {(['improving', 'stable', 'declining'] as const).map(tren
+                  key={trend}
+                  size
+
+                  {trend}
+              ))}
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-4">
+                value={
+                max={10}
+                className="flex-1"
+              <Badge varian
+              </Badge>
+          </div>
+          <div cl
+            <div className="fle
+                value={lo
+                m
+                cl
+              />
+
+            </div>
+
             <div className="space-y-2">
               {(['new', 'claimed', 'contacted', 'qualified', 'dead'] as ProspectStatus[]).map(status => (
                 <div key={status} className="flex items-center space-x-2">
@@ -270,6 +270,6 @@ export function AdvancedFilters({ filters, onFiltersChange, activeFilterCount }:
           </div>
         </div>
       </SheetContent>
-    </Sheet>
-  )
-}
+
+
+
