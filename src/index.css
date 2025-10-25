@@ -8,6 +8,15 @@
   
   body {
     font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    background: linear-gradient(135deg, 
+      oklch(0.25 0.08 250) 0%, 
+      oklch(0.20 0.06 240) 25%,
+      oklch(0.18 0.05 230) 50%,
+      oklch(0.22 0.07 245) 75%,
+      oklch(0.25 0.08 250) 100%
+    );
+    background-attachment: fixed;
+    min-height: 100vh;
   }
   
   .font-mono {
@@ -16,32 +25,32 @@
 }
 
 :root {
-  --background: oklch(0.98 0.002 0);
-  --foreground: oklch(0.05 0.005 0);
+  --background: oklch(0.98 0.01 90 / 0.05);
+  --foreground: oklch(0.20 0.05 250);
 
-  --card: oklch(1.00 0 0);
-  --card-foreground: oklch(0.05 0.005 0);
+  --card: oklch(1.00 0 0 / 0.65);
+  --card-foreground: oklch(0.20 0.05 250);
   
-  --popover: oklch(1.00 0 0);
-  --popover-foreground: oklch(0.05 0.005 0);
+  --popover: oklch(1.00 0 0 / 0.95);
+  --popover-foreground: oklch(0.20 0.05 250);
 
   --primary: oklch(0.65 0.30 45);
   --primary-foreground: oklch(0.05 0.005 0);
 
-  --secondary: oklch(0.85 0.25 280);
-  --secondary-foreground: oklch(0.05 0.005 0);
+  --secondary: oklch(0.65 0.14 210);
+  --secondary-foreground: oklch(0.20 0.05 250);
 
-  --muted: oklch(0.92 0.001 0);
-  --muted-foreground: oklch(0.35 0.003 0);
+  --muted: oklch(0.92 0.01 90 / 0.5);
+  --muted-foreground: oklch(0.50 0.02 270);
 
-  --accent: oklch(0.75 0.28 120);
-  --accent-foreground: oklch(0.05 0.005 0);
+  --accent: oklch(0.70 0.15 60);
+  --accent-foreground: oklch(0.20 0.05 250);
 
   --destructive: oklch(0.55 0.35 15);
   --destructive-foreground: oklch(0.98 0.002 0);
 
-  --border: oklch(0.05 0.005 0);
-  --input: oklch(0.05 0.005 0);
+  --border: oklch(1 0 0 / 0.15);
+  --input: oklch(1 0 0 / 0.15);
   --ring: oklch(0.65 0.30 45);
 
   --success: oklch(0.60 0.15 145);
@@ -50,52 +59,33 @@
   --warning: oklch(0.75 0.15 75);
   --warning-foreground: oklch(0.20 0.05 250);
 
-  --radius: 0rem;
+  --radius: 0.75rem;
 
   --chart-1: oklch(0.65 0.30 45);
-
-  --chart-2: oklch(0.85 0.25 280);
-
-  --chart-3: oklch(0.75 0.28 120);
-
+  --chart-2: oklch(0.65 0.14 210);
+  --chart-3: oklch(0.70 0.15 60);
   --chart-4: oklch(0.55 0.32 200);
-
   --chart-5: oklch(0.45 0.30 320);
 
   --sidebar: oklch(0.95 0.001 0);
-
   --sidebar-foreground: oklch(0.05 0.005 0);
-
   --sidebar-primary: oklch(0.65 0.30 45);
-
   --sidebar-primary-foreground: oklch(0.05 0.005 0);
-
   --sidebar-accent: oklch(0.85 0.25 280);
-
   --sidebar-accent-foreground: oklch(0.05 0.005 0);
-
   --sidebar-border: oklch(0.05 0.005 0);
-
   --sidebar-ring: oklch(0.65 0.30 45);
 
   --shadow-color: oklch(0.05 0.005 0);
-
   --shadow-opacity: 1.0;
-
   --shadow-blur: 0px;
-
   --shadow-spread: 0px;
-
   --shadow-offset-x: 6px;
-
   --shadow-offset-y: 6px;
 
   --font-sans: Oswald;
-
   --font-serif: Roboto Slab;
-
   --font-mono: Space Mono;
-
   --spacing: 0.20rem;
 }
 
@@ -130,4 +120,50 @@
   --radius-xl: calc(var(--radius) * 2);
   --radius-2xl: calc(var(--radius) * 3);
   --radius-full: 9999px;
+}
+
+.glass-effect {
+  background: oklch(1 0 0 / 0.65);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid oklch(1 0 0 / 0.15);
+}
+
+.mica-effect {
+  background: linear-gradient(135deg, 
+    oklch(1 0 0 / 0.7) 0%,
+    oklch(0.98 0.01 250 / 0.6) 100%
+  );
+  backdrop-filter: blur(40px) saturate(150%);
+  -webkit-backdrop-filter: blur(40px) saturate(150%);
+  border: 1px solid oklch(1 0 0 / 0.2);
+}
+
+@keyframes ticker-slide {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes float-subtle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px oklch(0.65 0.30 45 / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px oklch(0.65 0.30 45 / 0.5);
+  }
 }

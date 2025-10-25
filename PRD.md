@@ -59,7 +59,7 @@ This is a sophisticated B2B SaaS platform managing multiple data pipelines (UCC 
 
 ## Design Direction
 
-The design should evoke **trust, precision, and sophistication** – resembling Bloomberg Terminal's data density with Apple's aesthetic refinement. It's a serious financial tool requiring **minimal, high-contrast UI** that prioritizes information density while maintaining scanability through typographic hierarchy and strategic use of color to signal risk/opportunity states.
+The design should evoke **trust, precision, and sophistication** – resembling Bloomberg Terminal's data density with Apple's aesthetic refinement combined with modern glassmorphic and acrylic translucent UI elements inspired by Windows 11 Mica and macOS translucency effects. It's a serious financial tool requiring **minimal, high-contrast UI** with depth through transparency that prioritizes information density while maintaining scanability through typographic hierarchy and strategic use of color to signal risk/opportunity states. **Mobile-first responsive design ensures full functionality on all device sizes.**
 
 ## Color Selection
 
@@ -136,8 +136,10 @@ Animations should be **subtle and purposeful**, reinforcing state changes and da
   - Section margins: `mb-8` (32px) between dashboard zones
 
 - **Mobile**: 
-
-  - Below 1024px: Single-column layout; tabs become vertical nav; tables switch to card stacks
-  - Touch targets expand to 44px minimum; hover states become tap highlights
-  - Charts adapt to vertical orientation; competitor bubble charts become bar charts
+  - Mobile-first responsive design with touch-optimized controls (minimum 44px touch targets)
+  - Below 768px: Single-column card layout; tabs show icons with abbreviated text; controls stack vertically
+  - Below 640px: Stats grid becomes 2 columns; prospect cards go full width; filters move to slide-out sheet
+  - Touch targets expand to 44px minimum; hover states become tap highlights with visual feedback
+  - Charts adapt to vertical orientation maintaining readability on small screens
+  - Translucent glass effects with backdrop blur work seamlessly on mobile with performance optimization
 

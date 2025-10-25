@@ -24,12 +24,12 @@ export function SortControls({ sortField, sortDirection, onSortChange }: SortCon
 
   return (
     <div className="flex items-center gap-2">
-      <ListNumbers size={16} className="text-muted-foreground" />
+      <ListNumbers size={14} className="text-white/70 sm:w-4 sm:h-4" />
       <Select value={sortField} onValueChange={(val) => onSortChange(val as SortField, sortDirection)}>
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-[140px] sm:w-[180px] glass-effect border-white/30 text-white h-8 sm:h-10 text-xs sm:text-sm">
           <SelectValue placeholder="Sort by" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="glass-effect border-white/30">
           <SelectItem value="priorityScore">Priority Score</SelectItem>
           <SelectItem value="healthScore">Health Score</SelectItem>
           <SelectItem value="signalCount">Growth Signals</SelectItem>
@@ -37,11 +37,11 @@ export function SortControls({ sortField, sortDirection, onSortChange }: SortCon
           <SelectItem value="companyName">Company Name</SelectItem>
         </SelectContent>
       </Select>
-      <Button variant="outline" size="icon" onClick={toggleDirection}>
+      <Button variant="outline" size="icon" onClick={toggleDirection} className="glass-effect border-white/30 h-8 w-8 sm:h-10 sm:w-10">
         {sortDirection === 'desc' ? (
-          <ArrowDown size={16} weight="bold" />
+          <ArrowDown size={14} weight="bold" className="sm:w-4 sm:h-4" />
         ) : (
-          <ArrowUp size={16} weight="bold" />
+          <ArrowUp size={14} weight="bold" className="sm:w-4 sm:h-4" />
         )}
       </Button>
     </div>

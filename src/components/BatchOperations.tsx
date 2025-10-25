@@ -66,37 +66,38 @@ export function BatchOperations({
   if (prospects.length === 0) return null
 
   return (
-    <div className="flex items-center gap-3 mb-4">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
       <div className="flex items-center gap-2">
         <Checkbox
           checked={isAllSelected || (isSomeSelected ? 'indeterminate' : false)}
           onCheckedChange={handleToggleAll}
+          className="glass-effect border-white/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
         />
-        <span className="text-sm text-muted-foreground">
+        <span className="text-xs sm:text-sm text-white/70">
           {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select all'}
         </span>
       </div>
 
       {selectedIds.size > 0 && (
         <>
-          <Badge variant="secondary" className="ml-2">
+          <Badge variant="secondary" className="glass-effect border-white/30">
             {selectedIds.size} prospects
           </Badge>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="glass-effect border-white/30 text-white h-8 sm:h-9 text-xs sm:text-sm">
                 Batch Actions
-                <CaretDown size={14} className="ml-2" />
+                <CaretDown size={12} className="ml-2 sm:w-3.5 sm:h-3.5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
+            <DropdownMenuContent align="start" className="glass-effect border-white/30">
               <DropdownMenuItem onClick={() => handleBatchAction('claim')}>
-                <UserPlus size={16} className="mr-2" />
+                <UserPlus size={14} className="mr-2 sm:w-4 sm:h-4" />
                 Claim Selected ({selectedIds.size})
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleBatchAction('export')}>
-                <Export size={16} className="mr-2" />
+                <Export size={14} className="mr-2 sm:w-4 sm:h-4" />
                 Export Selected ({selectedIds.size})
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -104,7 +105,7 @@ export function BatchOperations({
                 onClick={() => handleBatchAction('delete')}
                 className="text-destructive"
               >
-                <Trash size={16} className="mr-2" />
+                <Trash size={14} className="mr-2 sm:w-4 sm:h-4" />
                 Remove Selected ({selectedIds.size})
               </DropdownMenuItem>
             </DropdownMenuContent>
