@@ -1,45 +1,45 @@
 import { useState } from 'react'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/butto
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import {
   Sheet,
   SheetContent,
   SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
-import { FunnelSimple } from '@phosphor-icons/react'
-import { HealthGrade, ProspectStatus, SignalType } from '@/lib/types'
+  SheetTrigger
+import { Funn
 
-export interface AdvancedFilterState {
   healthGrades: HealthGrade[]
-  statuses: ProspectStatus[]
   signalTypes: SignalType[]
-  sentimentTrends: Array<'improving' | 'stable' | 'declining'>
   minSignalCount: number
-  defaultAgeRange: [number, number]
-  revenueRange: [number, number]
-  hasViolations: boolean | null
-}
 
-export const initialFilters: AdvancedFilterState = {
-  healthGrades: [],
+}
+export const initialFilters: 
   statuses: [],
-  signalTypes: [],
   sentimentTrends: [],
-  minSignalCount: 0,
   defaultAgeRange: [0, 7],
-  revenueRange: [0, 10000000],
   hasViolations: null
-}
 
-interface AdvancedFiltersProps {
   filters: AdvancedFilterState
-  onFiltersChange: (filters: AdvancedFilterState) => void
   activeFilterCount: number
-}
+
+
+
+    onFiltersChange
+  }
+  const handleRese
+  }
+  const toggleHealth
+      ...prev,
+        ? prev.healthGrades.fi
+    }))
+
+
+      statuses: prev.statuses.in
+        : [...prev.statuses, s
+  }
+  const toggleSignalType = 
+ 
 
 export function AdvancedFilters({ filters, onFiltersChange, activeFilterCount }: AdvancedFiltersProps) {
   const [open, setOpen] = useState(false)
@@ -90,46 +90,46 @@ export function AdvancedFilters({ filters, onFiltersChange, activeFilterCount }:
     }))
   }
 
-  return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline" className="glass-effect border-white/30 text-white relative h-10 sm:h-11">
-          <FunnelSimple size={16} weight="bold" className="mr-2" />
-          Advanced Filters
-          {activeFilterCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
-              {activeFilterCount}
-            </span>
-          )}
-        </Button>
-      </SheetTrigger>
-      <SheetContent className="glass-effect border-white/30 overflow-y-auto w-full sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle className="text-white">Advanced Filters</SheetTitle>
-          <SheetDescription className="text-white/70">
-            Refine your prospect search with detailed criteria
-          </SheetDescription>
-        </SheetHeader>
-        <div className="space-y-6 mt-6">
-          <div>
-            <Label className="text-white">Health Grades</Label>
-            <div className="flex gap-2 mt-2 flex-wrap">
-              {(['A', 'B', 'C', 'D', 'F'] as HealthGrade[]).map(grade => (
-                <Button
-                  key={grade}
-                  size="sm"
-                  variant={localFilters.healthGrades.includes(grade) ? 'default' : 'outline'}
-                  onClick={() => toggleHealthGrade(grade)}
-                  className={localFilters.healthGrades.includes(grade) ? '' : 'glass-effect border-white/30 text-white'}
-                >
-                  {grade}
-                </Button>
+          
+                  variant={localFilters.status
+                  className=
+                  {status}
               ))}
+          </div>
+          <div>
+            <div className="flex gap-2 mt-2 flex-wrap">
+                <Button
+                  s
+            
+                >
+                </But
+            </div>
+
+            <Label className="text-white">Sentiment Trend</Label>
+              {(['improving', 'stable', 'declining'] a
+                  key={sentiment}
+                  variant={lo
+                  clas
+                  {sentiment}
+          <div>
+          </div>
+            <div className="flex gap-2 mt-2 flex-wrap">
+            <Slider
+              onValueCh
+              max={10}
+                  size="sm"
+            />
+          <div>
+            <Slider
+                >
+              max={7}
+                </Button>
+          </div>
             </div>
           </div>
 
           <div>
-            <Label className="text-white">Status</Label>
+              className="mt-2"
             <div className="flex gap-2 mt-2 flex-wrap">
               {(['new', 'claimed', 'contacted', 'qualified', 'dead'] as ProspectStatus[]).map(status => (
                 <Button
@@ -142,8 +142,8 @@ export function AdvancedFilters({ filters, onFiltersChange, activeFilterCount }:
                   {status}
                 </Button>
               ))}
-            </div>
-          </div>
+                on
+                
 
           <div>
             <Label className="text-white">Signal Types</Label>
@@ -159,7 +159,7 @@ export function AdvancedFilters({ filters, onFiltersChange, activeFilterCount }:
                   {type}
                 </Button>
               ))}
-            </div>
+      </SheetConte
           </div>
 
           <div>
@@ -216,10 +216,10 @@ export function AdvancedFilters({ filters, onFiltersChange, activeFilterCount }:
           </div>
 
           <div>
-            <Label className="text-white">Violations</Label>
+
             <div className="flex gap-2 mt-2 flex-wrap">
-              <Button
-                size="sm"
+
+
                 variant={localFilters.hasViolations === null ? 'default' : 'outline'}
                 onClick={() => setLocalFilters(prev => ({ ...prev, hasViolations: null }))}
                 className={localFilters.hasViolations === null ? '' : 'glass-effect border-white/30 text-white'}
@@ -232,29 +232,29 @@ export function AdvancedFilters({ filters, onFiltersChange, activeFilterCount }:
                 onClick={() => setLocalFilters(prev => ({ ...prev, hasViolations: false }))}
                 className={localFilters.hasViolations === false ? '' : 'glass-effect border-white/30 text-white'}
               >
-                No Violations
+
               </Button>
-              <Button
+
                 size="sm"
                 variant={localFilters.hasViolations === true ? 'default' : 'outline'}
                 onClick={() => setLocalFilters(prev => ({ ...prev, hasViolations: true }))}
                 className={localFilters.hasViolations === true ? '' : 'glass-effect border-white/30 text-white'}
               >
-                Has Violations
+
               </Button>
-            </div>
+
           </div>
 
           <div className="flex gap-2 pt-4 border-t border-white/20">
             <Button onClick={handleReset} variant="outline" className="flex-1 glass-effect border-white/30 text-white">
               Reset
-            </Button>
+
             <Button onClick={handleApply} className="flex-1">
               Apply Filters
             </Button>
-          </div>
+
         </div>
-      </SheetContent>
-    </Sheet>
-  )
-}
+
+
+
+
