@@ -151,7 +151,8 @@ export function exportProspects(
   a.href = url
   
   // Generate filename
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
+  // Use ISO string, remove milliseconds and 'Z', replace colons with dashes for filename safety
+  const timestamp = new Date().toISOString().split('.')[0].replace(/[:]/g, '-')
   const filterSuffix = filterInfo ? `-${filterInfo}` : ''
   
   const filename = prospects.length === 1
