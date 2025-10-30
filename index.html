@@ -78,7 +78,10 @@ startBtn.onclick = async () => {
   resultsBody.innerHTML = '';
   resultsTbl.style.display = 'none';
   try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&source=${encodeURIComponent(source)}`);
+    const url = new URL('/api/search', window.location.origin);
+    url.searchParams.set('q', q);
+    url.searchParams.set('source', source);
+    const res = await fetch(url);
     if(!res.ok) throw new Error('Server error');
     const data = await res.json();
     status.innerText = `Found ${data.results.length} items (duplicates filtered)`;
