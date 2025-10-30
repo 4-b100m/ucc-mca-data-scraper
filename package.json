@@ -1,7 +1,30 @@
 {
-    "name": "spark-template",
+    "name": "ucc-mca-intelligence-platform",
+    "description": "A comprehensive merchant cash advance intelligence platform that transforms UCC filing data into actionable business opportunities through automated scraping, real-time health monitoring, growth signal detection, and ML-powered lead qualification",
+    "version": "1.0.0",
+    "author": "ivi374forivi",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ivi374forivi/public-record-data-scrapper.git"
+    },
+    "keywords": [
+        "ucc-filings",
+        "merchant-cash-advance",
+        "mca",
+        "lead-generation",
+        "business-intelligence",
+        "prospect-dashboard",
+        "growth-signals",
+        "health-monitoring",
+        "competitive-analysis",
+        "portfolio-monitoring",
+        "react",
+        "typescript",
+        "vite",
+        "radix-ui"
+    ],
     "private": true,
-    "version": "0.0.0",
     "type": "module",
     "scripts": {
         "dev": "vite",
