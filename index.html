@@ -86,7 +86,7 @@ startBtn.onclick = async () => {
       resultsTbl.style.display = '';
       for(const r of data.results){
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td class="small">${r.source}</td>
+        tr.innerHTML = `<td class="small">${escapeHtml(r.source)}</td>
                         <td><strong>${escapeHtml(r.title||r.snippet||'n/a')}</strong><div class="small">${escapeHtml(r.snippet||'')}</div></td>
                         <td><a href="${r.url||'#'}" target="_blank" rel="noopener noreferrer">Open</a></td>
                         <td class="small">${new Date(r.found).toLocaleString()}</td>`;
