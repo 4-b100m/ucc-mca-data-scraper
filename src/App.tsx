@@ -33,9 +33,13 @@ import {
   ChartBar, 
   Heart, 
   ArrowClockwise,
-  MagnifyingGlass
+  MagnifyingGlass,
+  Robot
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { AgenticDashboard } from '@/components/AgenticDashboard'
+import { useAgenticEngine } from '@/hooks/use-agentic-engine'
+import { SystemContext, PerformanceMetrics, UserAction } from '@/lib/agentic/types'
 
 function App() {
   const [prospects, setProspects, deleteProspects] = useKV<Prospect[]>('ucc-prospects', [])
@@ -54,6 +58,28 @@ function App() {
   const [sortField, setSortField] = useState<SortField>('priorityScore')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [exportFormat, setExportFormat] = useKV<ExportFormat>('export-format', 'json')
+  const [userActions, setUserActions] = useKV<UserAction[]>('user-actions', [])
+
+  // Agentic Engine Integration
+  const systemContext: SystemContext = useMemo(() => ({
+    prospects: prospects || [],
+    competitors: competitors || [],
+    portfolio: portfolio || [],
+    userActions: userActions || [],
+    performanceMetrics: {
+      avgResponseTime: 450,
+      errorRate: 0.02,
+      userSatisfactionScore: 7.5,
+      dataFreshnessScore: 85
+    } as PerformanceMetrics,
+    timestamp: new Date().toISOString()
+  }), [prospects, competitors, portfolio, userActions])
+
+  const agentic = useAgenticEngine(systemContext, {
+    enabled: true,
+    autonomousExecutionEnabled: false, // Disabled by default for safety
+    safetyThreshold: 80
+  })
 
   useEffect(() => {
     if (!prospects || prospects.length === 0) {
@@ -72,6 +98,18 @@ function App() {
 
   const stats = generateDashboardStats(prospects || [], portfolio || [])
   
+  // Track user actions for agentic analysis
+  const trackAction = (type: string, details: Record<string, any> = {}) => {
+    setUserActions((current) => {
+      const newAction: UserAction = {
+        type,
+        timestamp: new Date().toISOString(),
+        details
+      }
+      return [...(current || []), newAction].slice(-100) // Keep last 100 actions
+    })
+  }
+
   const handleRefreshData = () => {
     const now = new Date().toISOString()
     setProspects((current) => {
@@ -85,6 +123,7 @@ function App() {
       }))
     })
     setLastDataRefresh(now)
+    trackAction('refresh-data')
     toast.success('Data refreshed', {
       description: 'All health scores and signals have been updated.'
     })
@@ -93,6 +132,7 @@ function App() {
   const handleProspectSelect = (prospect: Prospect) => {
     setSelectedProspect(prospect)
     setDialogOpen(true)
+    trackAction('prospect-select', { prospectId: prospect.id })
   }
 
   const handleClaimLead = (prospect: Prospect) => {
@@ -113,6 +153,7 @@ function App() {
     })
     setSelectedProspect(null)
     setDialogOpen(false)
+    trackAction('claim', { prospectId: prospect.id })
     toast.success('Lead claimed successfully', {
       description: `${prospect.companyName} has been added to your pipeline.`
     })
@@ -311,7 +352,7 @@ function App() {
           )}
 
           <Tabs defaultValue="prospects" className="w-full">
-            <TabsList className="glass-effect grid w-full grid-cols-2 sm:grid-cols-4 mb-4 sm:mb-6 gap-1 sm:gap-0 h-auto sm:h-10 p-1">
+            <TabsList className="glass-effect grid w-full grid-cols-3 sm:grid-cols-5 mb-4 sm:mb-6 gap-1 sm:gap-0 h-auto sm:h-10 p-1">
               <TabsTrigger value="prospects" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
                 <Target size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
                 <span className="hidden xs:inline">Prospects</span>
@@ -327,6 +368,10 @@ function App() {
               <TabsTrigger value="requalification" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
                 <ArrowClockwise size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
                 <span className="hidden xs:inline">Re-qual</span>
+              </TabsTrigger>
+              <TabsTrigger value="agentic" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
+                <Robot size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
+                <span className="hidden xs:inline">Agentic</span>
               </TabsTrigger>
             </TabsList>
 
@@ -488,6 +533,10 @@ function App() {
                   Upload Lead List
                 </Button>
               </div>
+            </TabsContent>
+
+            <TabsContent value="agentic" className="space-y-4 sm:space-y-6">
+              <AgenticDashboard agentic={agentic} />
             </TabsContent>
           </Tabs>
         </div>
