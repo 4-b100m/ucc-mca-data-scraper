@@ -27,14 +27,19 @@ import {
   generateDashboardStats
 } from '@/lib/mockData'
 import { Prospect, CompetitorData, PortfolioCompany, IndustryType } from '@/lib/types'
+import { exportProspects, ExportFormat } from '@/lib/exportUtils'
 import { 
   Target, 
   ChartBar, 
   Heart, 
   ArrowClockwise,
-  MagnifyingGlass
+  MagnifyingGlass,
+  Robot
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { AgenticDashboard } from '@/components/AgenticDashboard'
+import { useAgenticEngine } from '@/hooks/use-agentic-engine'
+import { SystemContext, PerformanceMetrics, UserAction } from '@/lib/agentic/types'
 
 function App() {
   const [prospects, setProspects, deleteProspects] = useKV<Prospect[]>('ucc-prospects', [])
@@ -52,6 +57,29 @@ function App() {
   const [lastDataRefresh, setLastDataRefresh] = useKV<string>('last-data-refresh', new Date().toISOString())
   const [sortField, setSortField] = useState<SortField>('priorityScore')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [exportFormat, setExportFormat] = useKV<ExportFormat>('export-format', 'json')
+  const [userActions, setUserActions] = useKV<UserAction[]>('user-actions', [])
+
+  // Agentic Engine Integration
+  const systemContext: SystemContext = useMemo(() => ({
+    prospects: prospects || [],
+    competitors: competitors || [],
+    portfolio: portfolio || [],
+    userActions: userActions || [],
+    performanceMetrics: {
+      avgResponseTime: 450,
+      errorRate: 0.02,
+      userSatisfactionScore: 7.5,
+      dataFreshnessScore: 85
+    } as PerformanceMetrics,
+    timestamp: new Date().toISOString()
+  }), [prospects, competitors, portfolio, userActions])
+
+  const agentic = useAgenticEngine(systemContext, {
+    enabled: true,
+    autonomousExecutionEnabled: false, // Disabled by default for safety
+    safetyThreshold: 80
+  })
 
   useEffect(() => {
     if (!prospects || prospects.length === 0) {
@@ -70,6 +98,18 @@ function App() {
 
   const stats = generateDashboardStats(prospects || [], portfolio || [])
   
+  // Track user actions for agentic analysis
+  const trackAction = (type: string, details: Record<string, any> = {}) => {
+    setUserActions((current) => {
+      const newAction: UserAction = {
+        type,
+        timestamp: new Date().toISOString(),
+        details
+      }
+      return [...(current || []), newAction].slice(-100) // Keep last 100 actions
+    })
+  }
+
   const handleRefreshData = () => {
     const now = new Date().toISOString()
     setProspects((current) => {
@@ -83,6 +123,7 @@ function App() {
       }))
     })
     setLastDataRefresh(now)
+    trackAction('refresh-data')
     toast.success('Data refreshed', {
       description: 'All health scores and signals have been updated.'
     })
@@ -91,6 +132,7 @@ function App() {
   const handleProspectSelect = (prospect: Prospect) => {
     setSelectedProspect(prospect)
     setDialogOpen(true)
+    trackAction('prospect-select', { prospectId: prospect.id })
   }
 
   const handleClaimLead = (prospect: Prospect) => {
@@ -111,6 +153,7 @@ function App() {
     })
     setSelectedProspect(null)
     setDialogOpen(false)
+    trackAction('claim', { prospectId: prospect.id })
     toast.success('Lead claimed successfully', {
       description: `${prospect.companyName} has been added to your pipeline.`
     })
@@ -136,37 +179,26 @@ function App() {
   }
 
   const handleExportProspect = (prospect: Prospect) => {
-    exportProspects([prospect])
+    handleExportProspects([prospect])
   }
 
-  const exportProspects = (prospectsToExport: Prospect[]) => {
-    const exportData = prospectsToExport.map(prospect => ({
-      company: prospect.companyName,
-      industry: prospect.industry,
-      state: prospect.state,
-      priorityScore: prospect.priorityScore,
-      healthGrade: prospect.healthScore.grade,
-      growthSignals: prospect.growthSignals.length,
-      estimatedRevenue: prospect.estimatedRevenue,
-      narrative: prospect.narrative,
-      status: prospect.status
-    }))
-    
-    const jsonStr = JSON.stringify(exportData, null, 2)
-    const blob = new Blob([jsonStr], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    const filename = prospectsToExport.length === 1
-      ? `prospect-${prospectsToExport[0].companyName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.json`
-      : `prospects-batch-${Date.now()}.json`
-    a.download = filename
-    a.click()
-    URL.revokeObjectURL(url)
-    
-    toast.success('Prospect(s) exported', {
-      description: `${prospectsToExport.length} lead(s) exported successfully.`
-    })
+  const handleExportProspects = (prospectsToExport: Prospect[]) => {
+    try {
+      const filterInfo = searchQuery || industryFilter !== 'all' || stateFilter !== 'all' || minScore > 0
+        ? 'filtered'
+        : undefined
+      
+      exportProspects(prospectsToExport, exportFormat, filterInfo)
+      
+      const formatLabel = exportFormat.toUpperCase()
+      toast.success(`Prospect(s) exported as ${formatLabel}`, {
+        description: `${prospectsToExport.length} lead(s) exported successfully.`
+      })
+    } catch (error) {
+      toast.error('Export failed', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred'
+      })
+    }
   }
 
   const handleBatchClaim = (ids: string[]) => {
@@ -189,7 +221,7 @@ function App() {
 
   const handleBatchExport = (ids: string[]) => {
     const prospectsToExport = (prospects || []).filter(p => ids.includes(p.id))
-    exportProspects(prospectsToExport)
+    handleExportProspects(prospectsToExport)
   }
 
   const handleBatchDelete = (ids: string[]) => {
@@ -320,7 +352,7 @@ function App() {
           )}
 
           <Tabs defaultValue="prospects" className="w-full">
-            <TabsList className="glass-effect grid w-full grid-cols-2 sm:grid-cols-4 mb-4 sm:mb-6 gap-1 sm:gap-0 h-auto sm:h-10 p-1">
+            <TabsList className="glass-effect grid w-full grid-cols-3 sm:grid-cols-5 mb-4 sm:mb-6 gap-1 sm:gap-0 h-auto sm:h-10 p-1">
               <TabsTrigger value="prospects" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
                 <Target size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
                 <span className="hidden xs:inline">Prospects</span>
@@ -336,6 +368,10 @@ function App() {
               <TabsTrigger value="requalification" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
                 <ArrowClockwise size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
                 <span className="hidden xs:inline">Re-qual</span>
+              </TabsTrigger>
+              <TabsTrigger value="agentic" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
+                <Robot size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
+                <span className="hidden xs:inline">Agentic</span>
               </TabsTrigger>
             </TabsList>
 
@@ -389,6 +425,15 @@ function App() {
                       <SelectItem value="50">50+</SelectItem>
                       <SelectItem value="70">70+ (High)</SelectItem>
                       <SelectItem value="85">85+ (Elite)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={exportFormat} onValueChange={(val) => setExportFormat(val as ExportFormat)}>
+                    <SelectTrigger className="flex-1 min-w-[110px] sm:w-[130px] glass-effect border-white/30 text-white h-10 sm:h-11">
+                      <SelectValue placeholder="Export Format" />
+                    </SelectTrigger>
+                    <SelectContent className="glass-effect border-white/30">
+                      <SelectItem value="json">Export: JSON</SelectItem>
+                      <SelectItem value="csv">Export: CSV</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -488,6 +533,10 @@ function App() {
                   Upload Lead List
                 </Button>
               </div>
+            </TabsContent>
+
+            <TabsContent value="agentic" className="space-y-4 sm:space-y-6">
+              <AgenticDashboard agentic={agentic} />
             </TabsContent>
           </Tabs>
         </div>
