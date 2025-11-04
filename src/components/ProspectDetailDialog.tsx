@@ -19,10 +19,12 @@ import {
   CurrencyDollar,
   TrendUp,
   TrendDown,
-  ArrowRight
+  ArrowRight,
+  Brain
 } from '@phosphor-icons/react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 
 interface ProspectDetailDialogProps {
   prospect: Prospect | null
@@ -149,6 +151,72 @@ export function ProspectDetailDialog({
               </div>
             </Card>
           </div>
+
+          {prospect.mlScoring && (
+            <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Brain size={24} weight="fill" className="text-primary" />
+                  <h3 className="font-semibold text-lg">ML Predictive Analysis</h3>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  Model {prospect.mlScoring.modelVersion}
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">Overall Confidence</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold font-mono text-primary">
+                      {prospect.mlScoring.confidence}%
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {prospect.mlScoring.confidence >= 70 ? 'High' : prospect.mlScoring.confidence >= 50 ? 'Medium' : 'Low'}
+                    </span>
+                  </div>
+                  <Progress value={prospect.mlScoring.confidence} className="mt-2" />
+                </div>
+                
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">Recovery Likelihood</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold font-mono text-success">
+                      {prospect.mlScoring.recoveryLikelihood}%
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {prospect.mlScoring.recoveryLikelihood >= 70 ? 'Excellent' : prospect.mlScoring.recoveryLikelihood >= 50 ? 'Good' : 'Fair'}
+                    </span>
+                  </div>
+                  <Progress value={prospect.mlScoring.recoveryLikelihood} className="mt-2" />
+                </div>
+              </div>
+
+              <Separator className="my-4" />
+
+              <div className="space-y-3">
+                <div className="text-sm font-medium text-muted-foreground mb-3">
+                  Model Factors (weighted analysis)
+                </div>
+                
+                {Object.entries(prospect.mlScoring.factors).map(([key, value]) => (
+                  <div key={key} className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="capitalize">
+                        {key.replace(/([A-Z])/g, ' $1').trim()}
+                      </span>
+                      <span className="font-mono text-xs">{value}%</span>
+                    </div>
+                    <Progress value={value} className="h-1.5" />
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 text-xs text-muted-foreground">
+                Last updated: {prospect.mlScoring.lastUpdated}
+              </div>
+            </Card>
+          )}
 
           <Tabs defaultValue="signals" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
