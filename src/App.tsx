@@ -44,7 +44,12 @@ import { useAgenticEngine } from '@/hooks/use-agentic-engine'
 import { SystemContext, PerformanceMetrics, UserAction } from '@/lib/agentic/types'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import type { ProspectNote, FollowUpReminder, OutreachEmail } from '@/lib/types'
-import { v4 as uuidv4 } from 'uuid'
+
+// Simple UUID generator using crypto API
+function generateId(): string {
+  return crypto.randomUUID ? crypto.randomUUID() : 
+    `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+}
 
 function App() {
   const [prospects, setProspects, deleteProspects] = useKV<Prospect[]>('ucc-prospects', [])
@@ -246,7 +251,7 @@ function App() {
   const handleAddNote = (note: Omit<ProspectNote, 'id' | 'createdAt' | 'createdBy'>) => {
     const newNote: ProspectNote = {
       ...note,
-      id: uuidv4(),
+      id: generateId(),
       createdBy: 'Current User',
       createdAt: new Date().toISOString()
     }
@@ -261,7 +266,7 @@ function App() {
   const handleAddReminder = (reminder: Omit<FollowUpReminder, 'id' | 'createdAt' | 'createdBy' | 'completed'>) => {
     const newReminder: FollowUpReminder = {
       ...reminder,
-      id: uuidv4(),
+      id: generateId(),
       createdBy: 'Current User',
       createdAt: new Date().toISOString(),
       completed: false
@@ -293,7 +298,7 @@ function App() {
   const handleSendEmail = (email: Omit<OutreachEmail, 'id' | 'createdAt' | 'createdBy'>) => {
     const newEmail: OutreachEmail = {
       ...email,
-      id: uuidv4(),
+      id: generateId(),
       createdBy: 'Current User',
       createdAt: new Date().toISOString()
     }
