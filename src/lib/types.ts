@@ -106,3 +106,24 @@ export interface DashboardStats {
   portfolioAtRisk: number
   avgHealthGrade: string
 }
+
+export interface ProspectNote {
+  id: string
+  prospectId: string
+  content: string
+  createdBy: string
+  createdAt: string
+  updatedAt?: string
+}
+
+export interface FollowUpReminder {
+  id: string
+  prospectId: string
+  dueDate: string
+  priority: 'low' | 'medium' | 'high'
+  description: string
+  completed: boolean
+  createdBy: string
+  createdAt: string
+  completedAt?: string
+}

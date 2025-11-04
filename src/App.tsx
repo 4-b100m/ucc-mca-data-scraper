@@ -41,6 +41,8 @@ import { AgenticDashboard } from '@/components/AgenticDashboard'
 import { useAgenticEngine } from '@/hooks/use-agentic-engine'
 import { SystemContext, PerformanceMetrics, UserAction } from '@/lib/agentic/types'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import type { ProspectNote, FollowUpReminder } from '@/lib/types'
+import { v4 as uuidv4 } from 'uuid'
 
 function App() {
   const [prospects, setProspects, deleteProspects] = useKV<Prospect[]>('ucc-prospects', [])
@@ -60,6 +62,8 @@ function App() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [exportFormat, setExportFormat] = useKV<ExportFormat>('export-format', 'json')
   const [userActions, setUserActions] = useKV<UserAction[]>('user-actions', [])
+  const [notes, setNotes] = useKV<ProspectNote[]>('prospect-notes', [])
+  const [reminders, setReminders] = useKV<FollowUpReminder[]>('prospect-reminders', [])
 
   // Agentic Engine Integration
   const systemContext: SystemContext = useMemo(() => ({
@@ -234,6 +238,53 @@ function App() {
     toast.info(`${ids.length} prospects removed`, {
       description: 'Selected prospects have been removed from the list.'
     })
+  }
+
+  const handleAddNote = (note: Omit<ProspectNote, 'id' | 'createdAt' | 'createdBy'>) => {
+    const newNote: ProspectNote = {
+      ...note,
+      id: uuidv4(),
+      createdBy: 'Current User',
+      createdAt: new Date().toISOString()
+    }
+    
+    setNotes((current) => [...(current || []), newNote])
+  }
+
+  const handleDeleteNote = (noteId: string) => {
+    setNotes((current) => (current || []).filter(n => n.id !== noteId))
+  }
+
+  const handleAddReminder = (reminder: Omit<FollowUpReminder, 'id' | 'createdAt' | 'createdBy' | 'completed'>) => {
+    const newReminder: FollowUpReminder = {
+      ...reminder,
+      id: uuidv4(),
+      createdBy: 'Current User',
+      createdAt: new Date().toISOString(),
+      completed: false
+    }
+    
+    setReminders((current) => [...(current || []), newReminder])
+  }
+
+  const handleCompleteReminder = (reminderId: string) => {
+    setReminders((current) => {
+      if (!current) return []
+      return current.map(r => {
+        if (r.id === reminderId) {
+          return {
+            ...r,
+            completed: !r.completed,
+            completedAt: !r.completed ? new Date().toISOString() : undefined
+          }
+        }
+        return r
+      })
+    })
+  }
+
+  const handleDeleteReminder = (reminderId: string) => {
+    setReminders((current) => (current || []).filter(r => r.id !== reminderId))
   }
 
   const filteredAndSortedProspects = useMemo(() => {
@@ -553,6 +604,13 @@ function App() {
         onClaim={handleClaimLead}
         onUnclaim={handleUnclaimLead}
         onExport={handleExportProspect}
+        notes={notes || []}
+        reminders={reminders || []}
+        onAddNote={handleAddNote}
+        onDeleteNote={handleDeleteNote}
+        onAddReminder={handleAddReminder}
+        onCompleteReminder={handleCompleteReminder}
+        onDeleteReminder={handleDeleteReminder}
       />
     </div>
   )

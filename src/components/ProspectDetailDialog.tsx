@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { HealthGradeBadge } from './HealthGradeBadge'
 import { SignalTimeline } from './SignalTimeline'
+import { NotesAndReminders } from './NotesAndReminders'
 import { 
   Buildings, 
   Export, 
@@ -25,6 +26,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import type { ProspectNote, FollowUpReminder } from '@/lib/types'
 
 interface ProspectDetailDialogProps {
   prospect: Prospect | null
@@ -33,6 +35,13 @@ interface ProspectDetailDialogProps {
   onClaim: (prospect: Prospect) => void
   onUnclaim: (prospect: Prospect) => void
   onExport: (prospect: Prospect) => void
+  notes?: ProspectNote[]
+  reminders?: FollowUpReminder[]
+  onAddNote?: (note: Omit<ProspectNote, 'id' | 'createdAt' | 'createdBy'>) => void
+  onDeleteNote?: (noteId: string) => void
+  onAddReminder?: (reminder: Omit<FollowUpReminder, 'id' | 'createdAt' | 'createdBy' | 'completed'>) => void
+  onCompleteReminder?: (reminderId: string) => void
+  onDeleteReminder?: (reminderId: string) => void
 }
 
 export function ProspectDetailDialog({ 
@@ -41,12 +50,22 @@ export function ProspectDetailDialog({
   onOpenChange,
   onClaim,
   onUnclaim,
-  onExport
+  onExport,
+  notes = [],
+  reminders = [],
+  onAddNote = () => {},
+  onDeleteNote = () => {},
+  onAddReminder = () => {},
+  onCompleteReminder = () => {},
+  onDeleteReminder = () => {}
 }: ProspectDetailDialogProps) {
   if (!prospect) return null
 
   const yearsSinceDefault = Math.floor(prospect.timeSinceDefault / 365)
   const isClaimed = prospect.status === 'claimed'
+  
+  const prospectNotes = notes.filter(n => n.prospectId === prospect.id)
+  const prospectReminders = reminders.filter(r => r.prospectId === prospect.id)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -219,12 +238,15 @@ export function ProspectDetailDialog({
           )}
 
           <Tabs defaultValue="signals" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signals">
                 Growth Signals ({prospect.growthSignals.length})
               </TabsTrigger>
               <TabsTrigger value="filings">
                 UCC Filings ({prospect.uccFilings.length})
+              </TabsTrigger>
+              <TabsTrigger value="notes">
+                Notes & Reminders
               </TabsTrigger>
             </TabsList>
             
@@ -273,6 +295,20 @@ export function ProspectDetailDialog({
                   </div>
                 </Card>
               ))}
+            </TabsContent>
+
+            <TabsContent value="notes" className="mt-4">
+              <NotesAndReminders
+                prospectId={prospect.id}
+                prospectName={prospect.companyName}
+                notes={prospectNotes}
+                reminders={prospectReminders}
+                onAddNote={onAddNote}
+                onDeleteNote={onDeleteNote}
+                onAddReminder={onAddReminder}
+                onCompleteReminder={onCompleteReminder}
+                onDeleteReminder={onDeleteReminder}
+              />
             </TabsContent>
           </Tabs>
 
