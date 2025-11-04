@@ -41,7 +41,7 @@ import { AgenticDashboard } from '@/components/AgenticDashboard'
 import { useAgenticEngine } from '@/hooks/use-agentic-engine'
 import { SystemContext, PerformanceMetrics, UserAction } from '@/lib/agentic/types'
 import { ThemeToggle } from '@/components/ThemeToggle'
-import type { ProspectNote, FollowUpReminder } from '@/lib/types'
+import type { ProspectNote, FollowUpReminder, OutreachEmail } from '@/lib/types'
 import { v4 as uuidv4 } from 'uuid'
 
 function App() {
@@ -64,6 +64,7 @@ function App() {
   const [userActions, setUserActions] = useKV<UserAction[]>('user-actions', [])
   const [notes, setNotes] = useKV<ProspectNote[]>('prospect-notes', [])
   const [reminders, setReminders] = useKV<FollowUpReminder[]>('prospect-reminders', [])
+  const [outreachEmails, setOutreachEmails] = useKV<OutreachEmail[]>('outreach-emails', [])
 
   // Agentic Engine Integration
   const systemContext: SystemContext = useMemo(() => ({
@@ -285,6 +286,18 @@ function App() {
 
   const handleDeleteReminder = (reminderId: string) => {
     setReminders((current) => (current || []).filter(r => r.id !== reminderId))
+  }
+
+  const handleSendEmail = (email: Omit<OutreachEmail, 'id' | 'createdAt' | 'createdBy'>) => {
+    const newEmail: OutreachEmail = {
+      ...email,
+      id: uuidv4(),
+      createdBy: 'Current User',
+      createdAt: new Date().toISOString()
+    }
+    
+    setOutreachEmails((current) => [...(current || []), newEmail])
+    trackAction('send-email', { prospectId: email.prospectId, templateId: email.templateId })
   }
 
   const filteredAndSortedProspects = useMemo(() => {
@@ -611,6 +624,7 @@ function App() {
         onAddReminder={handleAddReminder}
         onCompleteReminder={handleCompleteReminder}
         onDeleteReminder={handleDeleteReminder}
+        onSendEmail={handleSendEmail}
       />
     </div>
   )

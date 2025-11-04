@@ -127,3 +127,25 @@ export interface FollowUpReminder {
   createdAt: string
   completedAt?: string
 }
+
+export interface EmailTemplate {
+  id: string
+  name: string
+  subject: string
+  body: string
+  category: 'initial-outreach' | 'follow-up' | 'recovery-offer' | 'check-in'
+  variables: string[] // e.g., ['companyName', 'priorityScore', 'industryType']
+}
+
+export interface OutreachEmail {
+  id: string
+  prospectId: string
+  templateId: string
+  subject: string
+  body: string
+  status: 'draft' | 'sent' | 'scheduled'
+  sentAt?: string
+  scheduledFor?: string
+  createdBy: string
+  createdAt: string
+}

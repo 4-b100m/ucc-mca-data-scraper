@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator'
 import { HealthGradeBadge } from './HealthGradeBadge'
 import { SignalTimeline } from './SignalTimeline'
 import { NotesAndReminders } from './NotesAndReminders'
+import { EmailComposer } from './EmailComposer'
 import { 
   Buildings, 
   Export, 
@@ -21,12 +22,14 @@ import {
   TrendUp,
   TrendDown,
   ArrowRight,
-  Brain
+  Brain,
+  Envelope
 } from '@phosphor-icons/react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import type { ProspectNote, FollowUpReminder } from '@/lib/types'
+import type { ProspectNote, FollowUpReminder, OutreachEmail } from '@/lib/types'
+import { useState } from 'react'
 
 interface ProspectDetailDialogProps {
   prospect: Prospect | null
@@ -42,6 +45,7 @@ interface ProspectDetailDialogProps {
   onAddReminder?: (reminder: Omit<FollowUpReminder, 'id' | 'createdAt' | 'createdBy' | 'completed'>) => void
   onCompleteReminder?: (reminderId: string) => void
   onDeleteReminder?: (reminderId: string) => void
+  onSendEmail?: (email: Omit<OutreachEmail, 'id' | 'createdAt' | 'createdBy'>) => void
 }
 
 export function ProspectDetailDialog({ 
@@ -57,10 +61,12 @@ export function ProspectDetailDialog({
   onDeleteNote = () => {},
   onAddReminder = () => {},
   onCompleteReminder = () => {},
-  onDeleteReminder = () => {}
+  onDeleteReminder = () => {},
+  onSendEmail = () => {}
 }: ProspectDetailDialogProps) {
   if (!prospect) return null
 
+  const [emailComposerOpen, setEmailComposerOpen] = useState(false)
   const yearsSinceDefault = Math.floor(prospect.timeSinceDefault / 365)
   const isClaimed = prospect.status === 'claimed'
   
@@ -336,6 +342,14 @@ export function ProspectDetailDialog({
             <Button 
               size="lg" 
               variant="outline"
+              onClick={() => setEmailComposerOpen(true)}
+            >
+              <Envelope size={20} weight="bold" className="mr-2" />
+              Send Email
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
               onClick={() => onExport(prospect)}
             >
               <Export size={20} weight="bold" className="mr-2" />
@@ -343,6 +357,13 @@ export function ProspectDetailDialog({
             </Button>
           </div>
         </div>
+
+        <EmailComposer
+          prospect={prospect}
+          open={emailComposerOpen}
+          onOpenChange={setEmailComposerOpen}
+          onSendEmail={onSendEmail}
+        />
       </DialogContent>
     </Dialog>
   )
