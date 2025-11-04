@@ -34,10 +34,12 @@ import {
   Heart, 
   ArrowClockwise,
   MagnifyingGlass,
-  Robot
+  Robot,
+  ChartLineUp
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { AgenticDashboard } from '@/components/AgenticDashboard'
+import { AnalyticsDashboard } from '@/components/AnalyticsDashboard'
 import { useAgenticEngine } from '@/hooks/use-agentic-engine'
 import { SystemContext, PerformanceMetrics, UserAction } from '@/lib/agentic/types'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -420,7 +422,7 @@ function App() {
           )}
 
           <Tabs defaultValue="prospects" className="w-full">
-            <TabsList className="glass-effect grid w-full grid-cols-3 sm:grid-cols-5 mb-4 sm:mb-6 gap-1 sm:gap-0 h-auto sm:h-10 p-1">
+            <TabsList className="glass-effect grid w-full grid-cols-3 sm:grid-cols-6 mb-4 sm:mb-6 gap-1 sm:gap-0 h-auto sm:h-10 p-1">
               <TabsTrigger value="prospects" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
                 <Target size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
                 <span className="hidden xs:inline">Prospects</span>
@@ -432,6 +434,10 @@ function App() {
               <TabsTrigger value="intelligence" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
                 <ChartBar size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
                 <span className="hidden xs:inline">Intelligence</span>
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
+                <ChartLineUp size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
+                <span className="hidden xs:inline">Analytics</span>
               </TabsTrigger>
               <TabsTrigger value="requalification" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
                 <ArrowClockwise size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
@@ -588,6 +594,13 @@ function App() {
                 </p>
                 <CompetitorChart data={competitors || []} />
               </div>
+            </TabsContent>
+
+            <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+              <AnalyticsDashboard 
+                prospects={prospects || []}
+                portfolio={portfolio || []}
+              />
             </TabsContent>
 
             <TabsContent value="requalification" className="space-y-4 sm:space-y-6">
