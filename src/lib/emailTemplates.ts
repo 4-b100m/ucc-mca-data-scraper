@@ -108,7 +108,7 @@ Thanks,
   }
 ]
 
-export function populateTemplate(template: EmailTemplate, data: Record<string, any>): { subject: string; body: string } {
+export function populateTemplate(template: EmailTemplate, data: Record<string, string | number>): { subject: string; body: string } {
   let subject = template.subject
   let body = template.body
 
