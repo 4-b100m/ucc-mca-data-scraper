@@ -40,6 +40,7 @@ import { toast } from 'sonner'
 import { AgenticDashboard } from '@/components/AgenticDashboard'
 import { useAgenticEngine } from '@/hooks/use-agentic-engine'
 import { SystemContext, PerformanceMetrics, UserAction } from '@/lib/agentic/types'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 function App() {
   const [prospects, setProspects, deleteProspects] = useKV<Prospect[]>('ucc-prospects', [])
@@ -327,15 +328,18 @@ function App() {
                 Automated merchant cash advance opportunity discovery
               </p>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={handleRefreshData}
-              size="sm"
-              className="glass-effect border-white/30 text-white hover:bg-white/10 flex-shrink-0"
-            >
-              <ArrowClockwise size={16} weight="bold" className="sm:mr-2" />
-              <span className="hidden sm:inline">Refresh Data</span>
-            </Button>
+            <div className="flex gap-2 flex-shrink-0">
+              <ThemeToggle />
+              <Button 
+                variant="outline" 
+                onClick={handleRefreshData}
+                size="sm"
+                className="glass-effect border-white/30 text-white hover:bg-white/10"
+              >
+                <ArrowClockwise size={16} weight="bold" className="sm:mr-2" />
+                <span className="hidden sm:inline">Refresh Data</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
