@@ -6,7 +6,6 @@
 
 import { BaseAgent } from '../BaseAgent'
 import { AgentAnalysis, SystemContext, AgentTask, AgentTaskResult, EnrichmentRequest } from '../types'
-import { TierManager } from '../../subscription/tier-manager'
 import { usageTracker, UsageTracker } from '../../subscription/usage-tracker'
 import { 
   SECEdgarSource, 
