@@ -6,7 +6,7 @@
 
 import { BaseAgent } from '../BaseAgent'
 import { AgentAnalysis, SystemContext, AgentTask, AgentTaskResult, EnrichmentRequest } from '../types'
-import { usageTracker, UsageTracker } from '../../subscription/usage-tracker'
+import { usageTracker } from '../../subscription/usage-tracker'
 import { 
   SECEdgarSource, 
   OSHASource, 
