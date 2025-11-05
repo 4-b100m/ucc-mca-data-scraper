@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { HealthGradeBadge } from './HealthGradeBadge'
-import { Buildings, TrendUp, MapPin } from '@phosphor-icons/react'
+import { Buildings, TrendUp, MapPin, Brain } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 
@@ -114,6 +114,44 @@ export function ProspectCard({ prospect, onSelect }: ProspectCardProps) {
                 <Badge className="bg-accent text-accent-foreground text-xs">
                   <TrendUp size={12} weight="bold" className="mr-1 sm:w-3.5 sm:h-3.5" />
                   {prospect.growthSignals.length} detected
+                </Badge>
+              </motion.div>
+            )}
+
+            {prospect.mlScoring && (
+              <motion.div 
+                className="flex items-center justify-between gap-2"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+              >
+                <span className="text-xs sm:text-sm text-muted-foreground">ML Confidence</span>
+                <Badge 
+                  variant={prospect.mlScoring.confidence >= 70 ? 'default' : 'secondary'}
+                  className="text-xs"
+                >
+                  <Brain size={12} weight="bold" className="mr-1 sm:w-3.5 sm:h-3.5" />
+                  {prospect.mlScoring.confidence}%
+                </Badge>
+              </motion.div>
+            )}
+
+            {prospect.mlScoring && (
+              <motion.div 
+                className="flex items-center justify-between gap-2"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.15 }}
+              >
+                <span className="text-xs sm:text-sm text-muted-foreground">Recovery Likelihood</span>
+                <Badge 
+                  variant={prospect.mlScoring.recoveryLikelihood >= 70 ? 'default' : 'outline'}
+                  className={cn(
+                    "text-xs font-mono",
+                    prospect.mlScoring.recoveryLikelihood >= 70 && "bg-success text-success-foreground"
+                  )}
+                >
+                  {prospect.mlScoring.recoveryLikelihood}%
                 </Badge>
               </motion.div>
             )}

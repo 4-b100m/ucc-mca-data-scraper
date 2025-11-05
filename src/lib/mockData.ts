@@ -9,6 +9,7 @@ import {
   HealthGrade,
   SignalType
 } from './types'
+import { calculateMLScoring, addMLConfidenceToSignal } from './mlScoring'
 
 const INDUSTRIES: IndustryType[] = ['restaurant', 'retail', 'construction', 'healthcare', 'manufacturing', 'services', 'technology']
 const STATES = ['NY', 'CA', 'TX', 'FL', 'IL', 'PA', 'OH', 'GA', 'NC', 'MI']
@@ -108,14 +109,30 @@ export function generateGrowthSignals(count: number): GrowthSignal[] {
                   type === 'permit' ? randomInt(15, 25) :
                   type === 'equipment' ? randomInt(12, 22) : randomInt(10, 20)
     
-    signals.push({
+    const detectedDate = randomDate(randomInt(5, 60))
+    const baseConfidence = 0.7 + Math.random() * 0.25
+    
+    const signal = {
       id: `signal-${Date.now()}-${i}`,
       type,
       description: randomElement(descriptions[type]),
-      detectedDate: randomDate(randomInt(5, 60)),
+      detectedDate,
       sourceUrl: `https://example.com/source/${i}`,
       score,
-      confidence: 0.7 + Math.random() * 0.25
+      confidence: baseConfidence
+    }
+    
+    // Add ML confidence to signal
+    const mlConfidence = addMLConfidenceToSignal({
+      type,
+      confidence: baseConfidence * 100,
+      score,
+      detectedDate
+    })
+    
+    signals.push({
+      ...signal,
+      mlConfidence
     })
   }
 
@@ -150,7 +167,7 @@ export function generateProspects(count: number): Prospect[] {
     }
     narrativeParts.push(`Current health grade: ${healthScore.grade}`)
 
-    prospects.push({
+    const prospect: Prospect = {
       id: `prospect-${1000 + i}`,
       companyName: `${randomElement(companyPrefixes)} ${randomElement(companySuffixes)}`,
       industry,
@@ -176,7 +193,12 @@ export function generateProspects(count: number): Prospect[] {
       estimatedRevenue: randomInt(500000, 5000000),
       claimedBy: Math.random() > 0.8 ? 'Sales Team' : undefined,
       claimedDate: Math.random() > 0.8 ? randomDate(randomInt(1, 30)) : undefined
-    })
+    }
+
+    // Add ML scoring
+    prospect.mlScoring = calculateMLScoring(prospect)
+    
+    prospects.push(prospect)
   }
 
   return prospects.sort((a, b) => b.priorityScore - a.priorityScore)
