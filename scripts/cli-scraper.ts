@@ -269,11 +269,26 @@ program
       // Read input file
       const inputPath = path.resolve(options.input)
       const inputContent = await fs.readFile(inputPath, 'utf-8')
-      const lines = inputContent.trim().split('\n')
-      const companies = lines.slice(1).map(line => {
-        const [company, state] = line.split(',').map(s => s.trim())
+      const lines = inputContent.trim().split('\n').filter(line => line.trim() !== '')
+      
+      if (lines.length < 2) {
+        spinner.fail(chalk.red('Input file must contain header and at least one data row'))
+        process.exit(1)
+      }
+      
+      const companies = lines.slice(1).map((line, idx) => {
+        // Simple CSV parsing - handles quoted fields
+        const fields = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g) || []
+        const company = (fields[0] || '').replace(/^"|"$/g, '').trim()
+        const state = (fields[1] || '').replace(/^"|"$/g, '').trim()
+        
+        if (!company || !state) {
+          console.log(chalk.yellow(`⚠ Skipping invalid line ${idx + 2}: ${line}`))
+          return null
+        }
+        
         return { company, state }
-      })
+      }).filter(Boolean) as { company: string; state: string }[]
 
       spinner.succeed(chalk.green(`Found ${companies.length} companies to process`))
       
@@ -298,8 +313,10 @@ program
           console.log(chalk.green(`  ✓ Found ${result.data.filingCount} filings`))
           results.push({ company, state, ...result.data })
           
-          // Save individual result
-          const filename = `${company.replace(/[^a-zA-Z0-9]/g, '-')}-${state}.json`
+          // Save individual result with timestamp to avoid collisions
+          const timestamp = Date.now()
+          const sanitized = company.replace(/[^a-zA-Z0-9]/g, '-').substring(0, 50)
+          const filename = `${sanitized}-${state}-${timestamp}.json`
           await fs.writeFile(
             path.join(outputDir, filename),
             JSON.stringify(result.data, null, 2),

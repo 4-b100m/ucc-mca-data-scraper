@@ -100,7 +100,6 @@ export class CaliforniaScraper extends BaseScraper {
       })
 
       if (hasCaptcha) {
-        await page.close()
         return {
           success: false,
           error: 'CAPTCHA detected - manual intervention required',
@@ -155,8 +154,6 @@ export class CaliforniaScraper extends BaseScraper {
         return results
       })
 
-      await page.close()
-
       return {
         success: true,
         filings: filings as UCCFiling[],
@@ -165,15 +162,18 @@ export class CaliforniaScraper extends BaseScraper {
       }
 
     } catch (error) {
-      if (page) {
-        await page.close()
-      }
-      
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
         searchUrl: this.getManualSearchUrl(companyName),
         timestamp: new Date().toISOString()
+      }
+    } finally {
+      // Cleanup page in all cases
+      if (page) {
+        await page.close().catch(() => {
+          // Ignore errors during cleanup
+        })
       }
     }
   }
