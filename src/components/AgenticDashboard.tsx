@@ -15,7 +15,6 @@ import {
   Brain, 
   CheckCircle, 
   Clock, 
-  Warning,
   TrendUp,
   Shield,
   Sparkle
@@ -47,7 +46,8 @@ export function AgenticDashboard({ agentic }: AgenticDashboardProps) {
   }
 
   const pendingImprovements = improvements.filter(i => i.status === 'detected' || i.status === 'approved')
-  const completedImprovements = improvements.filter(i => i.status === 'completed')
+  // Track completed improvements for metrics
+  // const completedImprovements = improvements.filter(i => i.status === 'completed')
 
   return (
     <Card className="p-6">
