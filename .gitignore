@@ -39,3 +39,7 @@ enriched-data.json
 batch-results/
 *.csv
 !example-companies.csv
+
+# Distribution packages
+dist-package/
+ucc-scraper-*.tar.gz

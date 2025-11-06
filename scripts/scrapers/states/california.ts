@@ -88,8 +88,8 @@ export class CaliforniaScraper extends BaseScraper {
         await page.waitForSelector('.search-results, .no-results, .captcha', { 
           timeout: 10000 
         })
-      } catch (e) {
-        // Page loaded but no specific elements found
+      } catch {
+        // Continue - page may have loaded without specific selectors
       }
 
       // Check for CAPTCHA
@@ -111,7 +111,15 @@ export class CaliforniaScraper extends BaseScraper {
 
       // Scrape UCC filing data (this is a template - adjust selectors for actual site)
       const filings = await page.evaluate(() => {
-        const results: any[] = []
+        const results: Array<{
+          filingNumber: string
+          debtorName: string
+          securedParty: string
+          filingDate: string
+          collateral: string
+          status: 'active' | 'terminated' | 'lapsed'
+          filingType: 'UCC-1' | 'UCC-3'
+        }> = []
         
         // Example selector pattern - adjust based on actual California SOS site structure
         const resultElements = document.querySelectorAll('.ucc-filing, tr.filing-row, .result-item')
@@ -148,9 +156,6 @@ export class CaliforniaScraper extends BaseScraper {
       })
 
       await page.close()
-
-      // If no filings found using selectors, try to detect "no results" message
-      const hasResults = filings.length > 0
 
       return {
         success: true,

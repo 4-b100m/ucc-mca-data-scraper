@@ -78,7 +78,7 @@ export class FloridaScraper extends BaseScraper {
         await page.waitForSelector('.search-results, .no-results, .captcha', { 
           timeout: 10000 
         })
-      } catch (e) {
+      } catch {
         // Continue
       }
 
@@ -99,7 +99,15 @@ export class FloridaScraper extends BaseScraper {
       }
 
       const filings = await page.evaluate(() => {
-        const results: any[] = []
+        const results: Array<{
+          filingNumber: string
+          debtorName: string
+          securedParty: string
+          filingDate: string
+          collateral: string
+          status: 'active' | 'terminated' | 'lapsed'
+          filingType: 'UCC-1' | 'UCC-3'
+        }> = []
         const resultElements = document.querySelectorAll('.ucc-filing, tr.filing-row, .result-item')
         
         resultElements.forEach((element) => {

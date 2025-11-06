@@ -12,9 +12,9 @@ import ora from 'ora'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { ScraperAgent } from '../src/lib/agentic/agents/ScraperAgent'
-import { DataAcquisitionAgent } from '../src/lib/agentic/agents/DataAcquisitionAgent'
 import { DataNormalizationAgent } from '../src/lib/agentic/agents/DataNormalizationAgent'
 import { EnrichmentOrchestratorAgent } from '../src/lib/agentic/agents/EnrichmentOrchestratorAgent'
+import { UCCFiling } from './scrapers/base-scraper'
 
 const program = new Command()
 
@@ -66,9 +66,9 @@ program
       console.log(chalk.white(`State: ${result.data.state}`))
       console.log(chalk.white(`Filings found: ${result.data.filingCount}`))
       
-      if (result.data.filingCount > 0) {
+      if (result.data?.filingCount > 0) {
         console.log(chalk.cyan('\n--- Filings ---'))
-        result.data.filings.forEach((filing: any, idx: number) => {
+        result.data.filings.forEach((filing: UCCFiling, idx: number) => {
           console.log(chalk.white(`\n${idx + 1}. Filing #${filing.filingNumber}`))
           console.log(chalk.gray(`   Debtor: ${filing.debtorName}`))
           console.log(chalk.gray(`   Secured Party: ${filing.securedParty}`))
@@ -331,13 +331,13 @@ program
   })
 
 // Helper function to convert data to CSV
-function convertToCSV(data: any): string {
+function convertToCSV(data: { filings?: UCCFiling[] }): string {
   if (!data.filings || data.filings.length === 0) {
     return 'No filings found'
   }
   
   const headers = ['Filing Number', 'Debtor Name', 'Secured Party', 'Filing Date', 'Status', 'Collateral', 'Type']
-  const rows = data.filings.map((filing: any) => [
+  const rows = data.filings.map((filing: UCCFiling) => [
     filing.filingNumber,
     filing.debtorName,
     filing.securedParty,
@@ -349,23 +349,23 @@ function convertToCSV(data: any): string {
   
   const csvContent = [
     headers.join(','),
-    ...rows.map((row: any[]) => row.map(escapeCSV).join(','))
+    ...rows.map((row: string[]) => row.map(escapeCSV).join(','))
   ].join('\n')
   
   return csvContent
 }
 
-function convertEnrichmentToCSV(data: any): string {
+function convertEnrichmentToCSV(data: Record<string, unknown>): string {
   const headers = ['Field', 'Value']
   const rows: string[][] = []
   
-  rows.push(['Company Name', data.companyName])
-  rows.push(['State', data.state])
-  rows.push(['Sources Used', data.sources?.join(', ') || ''])
+  rows.push(['Company Name', String(data.companyName || '')])
+  rows.push(['State', String(data.state || '')])
+  rows.push(['Sources Used', Array.isArray(data.sources) ? data.sources.join(', ') : ''])
   rows.push(['Total Cost', `$${data.cost || 0}`])
   
-  if (data.enrichedData) {
-    const enriched = data.enrichedData
+  if (data.enrichedData && typeof data.enrichedData === 'object') {
+    const enriched = data.enrichedData as Record<string, Record<string, unknown>>
     if (enriched.sec) {
       rows.push(['SEC CIK', enriched.sec.cik || ''])
       rows.push(['SEC SIC Code', enriched.sec.sicCode || ''])
@@ -389,8 +389,8 @@ function convertEnrichmentToCSV(data: any): string {
   ].join('\n')
 }
 
-function escapeCSV(value: any): string {
-  const str = String(value || '')
+function escapeCSV(value: unknown): string {
+  const str = String(value ?? '')
   if (str.includes(',') || str.includes('"') || str.includes('\n')) {
     return `"${str.replace(/"/g, '""')}"`
   }
