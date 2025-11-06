@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import { AgenticEngine } from './AgenticEngine'
-import { SystemContext, Improvement } from './types'
+import { SystemContext } from './types'
 
 describe('AgenticEngine', () => {
   let engine: AgenticEngine
