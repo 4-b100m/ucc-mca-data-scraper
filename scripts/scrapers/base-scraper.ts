@@ -72,17 +72,19 @@ export abstract class BaseScraper {
 
   /**
    * Retry a function with exponential backoff
+   * Returns the result along with retry count
    */
   protected async retryWithBackoff<T>(
     fn: () => Promise<T>,
     context: string
-  ): Promise<T> {
+  ): Promise<{ result: T; retryCount: number }> {
     let lastError = new Error('Unknown error')
     
     for (let attempt = 0; attempt <= this.config.retryAttempts; attempt++) {
       try {
         this.log('info', `${context} - Attempt ${attempt + 1}/${this.config.retryAttempts + 1}`)
-        return await fn()
+        const result = await fn()
+        return { result, retryCount: attempt }
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error))
         

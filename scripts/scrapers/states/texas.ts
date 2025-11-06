@@ -66,18 +66,19 @@ export class TexasScraper extends BaseScraper {
     const searchUrl = this.getManualSearchUrl(companyName)
 
     try {
-      const result = await this.retryWithBackoff(async () => {
+      const { result, retryCount } = await this.retryWithBackoff(async () => {
         return await this.performSearch(companyName, searchUrl)
       }, `TX UCC search for ${companyName}`)
 
       this.log('info', 'UCC search completed successfully', { 
         companyName, 
-        filingCount: result.filings?.length || 0
+        filingCount: result.filings?.length || 0,
+        retryCount
       })
 
       return {
         ...result,
-        timestamp: new Date().toISOString()
+        retryCount
       }
     } catch (error) {
       this.log('error', 'UCC search failed after all retries', {
