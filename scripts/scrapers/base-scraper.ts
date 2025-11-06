@@ -108,7 +108,9 @@ export abstract class BaseScraper {
       }
     }
     
-    this.log('error', `${context} failed after ${retriesMade} ${retriesMade === 1 ? 'retry' : 'retries'}`)
+    // If we get here, all attempts (initial + retries) have failed
+    const totalAttempts = retriesMade + 1 // initial attempt + retries
+    this.log('error', `${context} failed after ${totalAttempts} ${totalAttempts === 1 ? 'attempt' : 'attempts'} (${retriesMade} ${retriesMade === 1 ? 'retry' : 'retries'})`)
     throw lastError
   }
 
@@ -177,19 +179,6 @@ export abstract class BaseScraper {
    */
   protected log(level: 'info' | 'warn' | 'error', message: string, data?: Record<string, unknown>): void {
     const timestamp = new Date().toISOString()
-    const logEntry = {
-      timestamp,
-      level: level.toUpperCase(),
-      scraper: this.config.state,
-      message,
-      ...(data && Object.keys(data).length > 0 ? { data } : {})
-    }
-    
-    // Output as JSON for structured logging (can be parsed by log aggregators)
-    // In production, this could be redirected to a file or log service
-    const logLine = JSON.stringify(logEntry)
-    
-    // Also output human-readable format to console for development
     const logMethod = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log
     
     // Check if we're in a TTY (interactive terminal) for colored output
@@ -199,7 +188,14 @@ export abstract class BaseScraper {
       logMethod(`[${timestamp}] [${level.toUpperCase()}] [${this.config.state}] ${message}${dataStr}`)
     } else {
       // Structured JSON format for production/logging systems
-      logMethod(logLine)
+      const logEntry = {
+        timestamp,
+        level: level.toUpperCase(),
+        scraper: this.config.state,
+        message,
+        ...(data && Object.keys(data).length > 0 ? { data } : {})
+      }
+      logMethod(JSON.stringify(logEntry))
     }
   }
 
