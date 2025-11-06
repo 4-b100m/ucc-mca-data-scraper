@@ -31,6 +31,44 @@ class TestAgent extends BaseAgent {
     ]
     return this.createAnalysis(findings, improvements)
   }
+
+  // Public test helpers to access protected methods
+  public testCreateFinding(
+    category: ImprovementSuggestion['category'],
+    severity: Finding['severity'],
+    description: string,
+    evidence: any
+  ): Finding {
+    return this.createFinding(category, severity, description, evidence)
+  }
+
+  public testCreateImprovement(
+    category: ImprovementSuggestion['category'],
+    priority: ImprovementSuggestion['priority'],
+    title: string,
+    description: string,
+    reasoning: string,
+    estimatedImpact: string,
+    automatable: boolean,
+    safetyScore: number,
+    implementation?: ImprovementSuggestion['implementation']
+  ): ImprovementSuggestion {
+    return this.createImprovement(
+      category,
+      priority,
+      title,
+      description,
+      reasoning,
+      estimatedImpact,
+      automatable,
+      safetyScore,
+      implementation
+    )
+  }
+
+  public testCreateAnalysis(findings: Finding[], improvements: ImprovementSuggestion[]): AgentAnalysis {
+    return this.createAnalysis(findings, improvements)
+  }
 }
 
 describe('BaseAgent', () => {
@@ -73,7 +111,7 @@ describe('BaseAgent', () => {
 
   describe('createFinding', () => {
     it('should create a finding with all required fields', () => {
-      const finding = agent['createFinding'](
+      const finding = agent.testCreateFinding(
         'security',
         'critical',
         'Test security issue',
@@ -90,15 +128,15 @@ describe('BaseAgent', () => {
     })
 
     it('should generate unique IDs for different findings', () => {
-      const finding1 = agent['createFinding']('data-quality', 'info', 'Issue 1', {})
-      const finding2 = agent['createFinding']('data-quality', 'info', 'Issue 2', {})
+      const finding1 = agent.testCreateFinding('data-quality', 'info', 'Issue 1', {})
+      const finding2 = agent.testCreateFinding('data-quality', 'info', 'Issue 2', {})
       expect(finding1.id).not.toBe(finding2.id)
     })
   })
 
   describe('createImprovement', () => {
     it('should create an improvement suggestion with all required fields', () => {
-      const improvement = agent['createImprovement'](
+      const improvement = agent.testCreateImprovement(
         'performance',
         'high',
         'Optimize queries',
@@ -130,7 +168,7 @@ describe('BaseAgent', () => {
         validationCriteria: ['Criteria 1']
       }
 
-      const improvement = agent['createImprovement'](
+      const improvement = agent.testCreateImprovement(
         'usability',
         'medium',
         'UI Enhancement',
@@ -146,7 +184,7 @@ describe('BaseAgent', () => {
     })
 
     it('should handle improvements without implementation plan', () => {
-      const improvement = agent['createImprovement'](
+      const improvement = agent.testCreateImprovement(
         'feature-enhancement',
         'low',
         'Add feature',
@@ -164,10 +202,10 @@ describe('BaseAgent', () => {
   describe('createAnalysis', () => {
     it('should create an analysis with findings and improvements', () => {
       const findings: Finding[] = [
-        agent['createFinding']('data-quality', 'warning', 'Data issue', {})
+        agent.testCreateFinding('data-quality', 'warning', 'Data issue', {})
       ]
       const improvements: ImprovementSuggestion[] = [
-        agent['createImprovement'](
+        agent.testCreateImprovement(
           'data-quality',
           'high',
           'Fix data',
@@ -179,7 +217,7 @@ describe('BaseAgent', () => {
         )
       ]
 
-      const analysis = agent['createAnalysis'](findings, improvements)
+      const analysis = agent.testCreateAnalysis(findings, improvements)
 
       expect(analysis).toMatchObject({
         agentId: agent.id,
@@ -192,7 +230,7 @@ describe('BaseAgent', () => {
     })
 
     it('should handle empty findings and improvements', () => {
-      const analysis = agent['createAnalysis']([], [])
+      const analysis = agent.testCreateAnalysis([], [])
 
       expect(analysis.findings).toHaveLength(0)
       expect(analysis.improvements).toHaveLength(0)
