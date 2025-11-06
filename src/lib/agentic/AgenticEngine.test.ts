@@ -10,9 +10,9 @@
  * - Health metrics
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { AgenticEngine } from './AgenticEngine'
-import { SystemContext, Improvement } from './types'
+import { SystemContext } from './types'
 
 describe('AgenticEngine', () => {
   let engine: AgenticEngine
@@ -179,7 +179,6 @@ describe('AgenticEngine', () => {
       })
       
       await engine.runAutonomousCycle(mockContext)
-      const history1 = engine.getExecutionHistory()
       
       await engine.runAutonomousCycle(mockContext)
       const history2 = engine.getExecutionHistory()

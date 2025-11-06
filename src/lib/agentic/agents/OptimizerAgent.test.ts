@@ -119,7 +119,7 @@ describe('OptimizerAgent', () => {
     })
 
     it('should detect high frequency filter operations', async () => {
-      mockContext.userActions = Array(150).fill(null).map((_, i) => ({
+      mockContext.userActions = Array(150).fill(null).map(() => ({
         type: 'filter',
         timestamp: new Date().toISOString(),
         details: {}

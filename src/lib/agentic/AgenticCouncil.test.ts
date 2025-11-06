@@ -214,7 +214,8 @@ describe('AgenticCouncil', () => {
         role: 'quality-assurance',
         name: 'Test Agent',
         capabilities: ['testing'],
-        analyze: async () => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        analyze: async (): Promise<any> => ({
           agentId: 'test-agent-id',
           agentRole: 'quality-assurance',
           findings: [],
@@ -238,6 +239,7 @@ describe('AgenticCouncil', () => {
 
     it('should handle removing non-existent agent', () => {
       const initialCount = council.getAgents().length
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       council.removeAgent('non-existent' as any)
       expect(council.getAgents().length).toBe(initialCount)
     })
@@ -255,7 +257,7 @@ describe('AgenticCouncil', () => {
     })
 
     it('should update review state', async () => {
-      const review = await council.conductReview(mockContext)
+      await council.conductReview(mockContext)
       const current = council.getCurrentReview()
       expect(current?.status).toBe('completed')
     })
@@ -312,8 +314,6 @@ describe('AgenticCouncil', () => {
       }
       
       council.addAgent(failingAgent)
-      
-      // Should still complete review
       const review = await council.conductReview(mockContext)
       expect(review.status).toBe('completed')
     })
@@ -379,11 +379,11 @@ describe('AgenticCouncil', () => {
     it('should handle large context efficiently', async () => {
       const largeContext: SystemContext = {
         ...mockContext,
-        prospects: Array(100).fill(null).map((_, i) => ({
-          companyName: `Company ${i}`,
+        prospects: Array(100).fill(null).map(() => ({
+          companyName: 'Test Co',
           state: 'CA'
         })),
-        userActions: Array(200).fill(null).map((_, i) => ({
+        userActions: Array(200).fill(null).map(() => ({
           type: 'search',
           timestamp: new Date().toISOString(),
           details: {}

@@ -183,9 +183,7 @@ describe('SecurityAgent', () => {
         details: {}
       }))
 
-      const analysis = await agent.analyze(mockContext)
-      
-      // First, let's manually add a critical finding to test the suggestion logic
+      // Test that security improvements are suggested
       const testAgent = new SecurityAgent()
       const testAnalysis = await testAgent.analyze(mockContext)
       
