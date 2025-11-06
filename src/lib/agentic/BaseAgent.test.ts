@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import { BaseAgent } from './BaseAgent'
-import { AgentRole, AgentAnalysis, SystemContext, Finding, ImprovementSuggestion } from './types'
+import { AgentAnalysis, SystemContext, Finding, ImprovementSuggestion } from './types'
 
 // Create a concrete implementation for testing
 class TestAgent extends BaseAgent {
