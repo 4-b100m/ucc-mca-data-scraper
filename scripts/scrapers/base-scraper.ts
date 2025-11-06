@@ -77,7 +77,7 @@ export abstract class BaseScraper {
     fn: () => Promise<T>,
     context: string
   ): Promise<T> {
-    let lastError: Error | null = null
+    let lastError = new Error('Unknown error')
     
     for (let attempt = 0; attempt <= this.config.retryAttempts; attempt++) {
       try {
@@ -166,5 +166,28 @@ export abstract class BaseScraper {
       valid: errors.length === 0,
       errors
     }
+  }
+
+  /**
+   * Validate and filter an array of filings
+   * Returns validated filings and collects all errors
+   */
+  protected validateFilings(
+    rawFilings: Partial<UCCFiling>[],
+    parseErrors: string[] = []
+  ): { validatedFilings: UCCFiling[]; validationErrors: string[] } {
+    const validatedFilings: UCCFiling[] = []
+    const validationErrors: string[] = [...parseErrors]
+
+    rawFilings.forEach((filing, index) => {
+      const validation = this.validateFiling(filing)
+      if (validation.valid) {
+        validatedFilings.push(filing as UCCFiling)
+      } else {
+        validationErrors.push(`Filing ${index + 1} validation errors: ${validation.errors.join(', ')}`)
+      }
+    })
+
+    return { validatedFilings, validationErrors }
   }
 }

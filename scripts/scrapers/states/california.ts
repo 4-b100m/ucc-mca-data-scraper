@@ -5,7 +5,7 @@
  * Uses Puppeteer for real web scraping with anti-detection measures
  */
 
-import { BaseScraper, ScraperResult, UCCFiling } from '../base-scraper'
+import { BaseScraper, ScraperResult } from '../base-scraper'
 import puppeteer, { Browser, Page } from 'puppeteer'
 
 export class CaliforniaScraper extends BaseScraper {
@@ -197,17 +197,7 @@ export class CaliforniaScraper extends BaseScraper {
       })
 
       // Validate filings and collect errors
-      const validatedFilings: UCCFiling[] = []
-      const validationErrors: string[] = [...parseErrors]
-
-      rawFilings.forEach((filing, index) => {
-        const validation = this.validateFiling(filing)
-        if (validation.valid) {
-          validatedFilings.push(filing as UCCFiling)
-        } else {
-          validationErrors.push(`Filing ${index + 1} validation errors: ${validation.errors.join(', ')}`)
-        }
-      })
+      const { validatedFilings, validationErrors } = this.validateFilings(rawFilings, parseErrors)
 
       if (validationErrors.length > 0) {
         this.log('warn', 'Some filings had parsing or validation errors', {
