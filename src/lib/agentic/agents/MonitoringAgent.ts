@@ -7,7 +7,7 @@
 import { BaseAgent } from '../BaseAgent'
 import { AgentAnalysis, SystemContext, AgentTask, AgentTaskResult } from '../types'
 import { usageTracker } from '../../subscription/usage-tracker'
-import { TierManager } from '../../subscription/tier-manager'
+
 
 export class MonitoringAgent extends BaseAgent {
   constructor() {
@@ -226,20 +226,7 @@ export class MonitoringAgent extends BaseAgent {
    */
   calculateCost(sources: string[]): number {
     return sources.reduce((total, source) => {
-      const costs: Record<string, number> = {
-        'sec-edgar': 0,
-        'osha': 0,
-        'uspto': 0,
-        'census': 0,
-        'sam-gov': 0,
-        'dnb': 0.50,
-        'google-places': 0.02,
-        'clearbit': 1.00,
-        'experian': 3.00,
-        'zoominfo': 2.50,
-        'newsapi': 0.10
-      }
-      return total + (costs[source] || 0)
+      return total + (usageTracker.getSourceCost(source) || 0)
     }, 0)
   }
 }
