@@ -3,7 +3,7 @@
  * Tests the core autonomous improvement engine and its capabilities
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { AgenticEngine } from './AgenticEngine'
 import { SystemContext, Improvement } from './types'
 
