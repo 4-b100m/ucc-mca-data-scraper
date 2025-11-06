@@ -117,9 +117,10 @@ export class UsageTracker {
     const cutoffDate = new Date()
 
     if (period === 'daily') {
-      cutoffDate.setDate(now.getDate() - 1)
+      cutoffDate.setHours(0, 0, 0, 0)
     } else {
-      cutoffDate.setMonth(now.getMonth() - 1)
+      cutoffDate.setDate(1)
+      cutoffDate.setHours(0, 0, 0, 0)
     }
 
     return allRecords.filter(r => new Date(r.timestamp) >= cutoffDate)
