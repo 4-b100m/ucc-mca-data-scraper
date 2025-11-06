@@ -7,15 +7,79 @@
 
 A comprehensive merchant cash advance intelligence platform that transforms UCC filing data into actionable business opportunities through automated scraping, real-time health monitoring, growth signal detection, and ML-powered lead qualification.
 
+**NEW: Terminal CLI Tool** - Standalone command-line scraper for individual use without GUI. Perfect for field data collection. See [CLI_USAGE.md](./CLI_USAGE.md) for details.
+
 ## Table of Contents
 
 - [Features](#features)
+- [Quick Start](#quick-start)
+- [CLI Tool](#cli-tool)
 - [Technology Stack](#technology-stack)
 - [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
+
+## Quick Start
+
+### Terminal CLI (No GUI)
+
+For quick data scraping from the command line:
+
+```bash
+# Install dependencies
+npm install --legacy-peer-deps
+
+# List available states
+npm run scrape -- list-states
+
+# Scrape UCC filings
+npm run scrape -- scrape-ucc -c "Company Name" -s CA -o results.json
+
+# Enrich company data
+npm run scrape -- enrich -c "Company Name" -s CA -o enriched.json
+```
+
+See [CLI_USAGE.md](./CLI_USAGE.md) for complete CLI documentation.
+
+### Web Application
+
+```bash
+# Install and run the web app
+npm install --legacy-peer-deps
+npm run dev
+```
+
+## CLI Tool
+
+The platform includes a **standalone terminal-based scraper** for individual use:
+
+### Features
+- 🔍 **UCC Filing Scraper**: Extract filings from CA, TX, FL state portals
+- 📊 **Data Enrichment**: Fetch data from SEC, OSHA, USPTO, Census, SAM.gov
+- 📝 **Multiple Formats**: Export as JSON or CSV
+- 🔄 **Batch Processing**: Process multiple companies from CSV files
+- 🛡️ **Anti-Detection**: Browser fingerprinting protection
+- ⏱️ **Rate Limiting**: Automatic throttling to respect site policies
+
+### Basic Usage
+
+```bash
+# Scrape UCC filings
+npm run scrape -- scrape-ucc -c "Acme Corporation" -s CA
+
+# Enrich company data from public sources
+npm run scrape -- enrich -c "Acme Corporation" -s CA
+
+# Normalize company names
+npm run scrape -- normalize -n "acme corporation, llc"
+
+# Batch process from CSV
+npm run scrape -- batch -i companies.csv -o ./results
+```
+
+See [CLI_USAGE.md](./CLI_USAGE.md) for detailed documentation.
 
 ## Features
 
@@ -39,7 +103,8 @@ The platform now includes a comprehensive data enrichment pipeline with:
   - Free: SEC EDGAR, OSHA, USPTO, Census, SAM.gov
   - Starter: D&B, Google Places, Clearbit
   - Professional: Experian, ZoomInfo, NewsAPI (structure ready)
-- **UCC Scraping**: State-specific scrapers for CA, TX, FL (templates)
+- **UCC Scraping**: State-specific scrapers for CA, TX, FL with real Puppeteer implementation
+- **CLI Tool**: Standalone terminal scraper for individual use (see [CLI_USAGE.md](./CLI_USAGE.md))
 - **Usage Tracking**: Quota management and cost tracking
 - **Rate Limiting**: Token bucket algorithm for API protection
 
