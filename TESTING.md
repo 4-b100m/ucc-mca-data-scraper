@@ -197,7 +197,8 @@ All tests must pass before code can be merged.
 ## Troubleshooting
 
 ### Tests are slow
-- Run tests in parallel: `npm test -- --threads`
+- Tests run in parallel by default with Vitest.
+- To explicitly specify the pool type: `npm test -- --pool=threads`
 - Run only changed tests: `npm test -- --changed`
 
 ### Tests fail locally but pass in CI
