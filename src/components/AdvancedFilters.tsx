@@ -33,7 +33,7 @@ export const initialFilters: AdvancedFilterState = {
   sentimentTrends: [],
   minSignalCount: 0,
   defaultAgeRange: [0, 7],
-  revenueRange: [0, 10000000],
+  revenueRange: [0, 3000000], // MCA-focused: small businesses only ($0-$3M)
   hasViolations: null
 }
 
@@ -222,12 +222,12 @@ export function AdvancedFilters({ filters, onFiltersChange, activeFilterCount }:
           </div>
 
           <div className="space-y-3">
-            <Label className="text-white">Estimated Revenue Range</Label>
+            <Label className="text-white">Estimated Revenue Range (MCA-Qualified)</Label>
             <div className="flex items-center gap-4">
               <Slider
                 value={localFilters.revenueRange}
                 onValueChange={(val) => setLocalFilters(prev => ({ ...prev, revenueRange: val as [number, number] }))}
-                max={10000000}
+                max={3000000}
                 step={100000}
                 className="flex-1"
                 minStepsBetweenThumbs={1}
