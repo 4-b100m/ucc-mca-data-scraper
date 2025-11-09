@@ -20,6 +20,8 @@ import { AdvancedFilters, AdvancedFilterState, initialFilters } from '@/componen
 import { StaleDataWarning } from '@/components/StaleDataWarning'
 import { BatchOperations } from '@/components/BatchOperations'
 import { SortControls, SortField, SortDirection } from '@/components/SortControls'
+import { FeedbackButton } from '@/components/FeedbackButton'
+import { FeedbackViewer } from '@/components/FeedbackViewer'
 import { 
   generateProspects, 
   generateCompetitorData, 
@@ -295,15 +297,19 @@ function App() {
                 Automated merchant cash advance opportunity discovery
               </p>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={handleRefreshData}
-              size="sm"
-              className="glass-effect border-white/30 text-white hover:bg-white/10 flex-shrink-0"
-            >
-              <ArrowClockwise size={16} weight="bold" className="sm:mr-2" />
-              <span className="hidden sm:inline">Refresh Data</span>
-            </Button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <FeedbackViewer />
+              <FeedbackButton />
+              <Button 
+                variant="outline" 
+                onClick={handleRefreshData}
+                size="sm"
+                className="glass-effect border-white/30 text-white hover:bg-white/10"
+              >
+                <ArrowClockwise size={16} weight="bold" className="sm:mr-2" />
+                <span className="hidden sm:inline">Refresh Data</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
