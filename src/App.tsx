@@ -285,23 +285,23 @@ function App() {
   return (
     <div className="min-h-screen">
       <header className="mica-effect border-b border-white/20 sticky top-0 z-50 shadow-lg">
-        <div className="container mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4">
+        <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-5">
           <div className="flex items-center justify-between gap-2 sm:gap-4">
             <div className="min-w-0 flex-1">
-              <h1 className="text-base sm:text-xl md:text-2xl font-semibold tracking-tight text-white truncate">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white truncate" style={{ letterSpacing: '-0.02em' }}>
                 UCC-MCA Intelligence Platform
               </h1>
-              <p className="text-xs sm:text-sm text-white/70 hidden sm:block">
+              <p className="text-sm sm:text-base text-white/80 hidden sm:block mt-1">
                 Automated merchant cash advance opportunity discovery
               </p>
             </div>
             <Button 
               variant="outline" 
               onClick={handleRefreshData}
-              size="sm"
-              className="glass-effect border-white/30 text-white hover:bg-white/10 flex-shrink-0"
+              size="default"
+              className="glass-effect border-white/30 text-white hover:bg-white/10 hover:border-white/40 flex-shrink-0 h-10 sm:h-11"
             >
-              <ArrowClockwise size={16} weight="bold" className="sm:mr-2" />
+              <ArrowClockwise size={18} weight="bold" className="sm:mr-2" />
               <span className="hidden sm:inline">Refresh Data</span>
             </Button>
           </div>
@@ -320,42 +320,42 @@ function App() {
           )}
 
           <Tabs defaultValue="prospects" className="w-full">
-            <TabsList className="glass-effect grid w-full grid-cols-2 sm:grid-cols-4 mb-4 sm:mb-6 gap-1 sm:gap-0 h-auto sm:h-10 p-1">
-              <TabsTrigger value="prospects" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
-                <Target size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
+            <TabsList className="glass-effect grid w-full grid-cols-2 sm:grid-cols-4 mb-6 gap-1 sm:gap-0 h-auto sm:h-12 p-1.5 shadow-md">
+              <TabsTrigger value="prospects" className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base px-3 py-2.5 sm:py-0 font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-white">
+                <Target size={18} weight="fill" className="sm:w-5 sm:h-5" />
                 <span className="hidden xs:inline">Prospects</span>
               </TabsTrigger>
-              <TabsTrigger value="portfolio" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
-                <Heart size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
+              <TabsTrigger value="portfolio" className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base px-3 py-2.5 sm:py-0 font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-white">
+                <Heart size={18} weight="fill" className="sm:w-5 sm:h-5" />
                 <span className="hidden xs:inline">Portfolio</span>
               </TabsTrigger>
-              <TabsTrigger value="intelligence" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
-                <ChartBar size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
+              <TabsTrigger value="intelligence" className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base px-3 py-2.5 sm:py-0 font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-white">
+                <ChartBar size={18} weight="fill" className="sm:w-5 sm:h-5" />
                 <span className="hidden xs:inline">Intelligence</span>
               </TabsTrigger>
-              <TabsTrigger value="requalification" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
-                <ArrowClockwise size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
+              <TabsTrigger value="requalification" className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base px-3 py-2.5 sm:py-0 font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-white">
+                <ArrowClockwise size={18} weight="fill" className="sm:w-5 sm:h-5" />
                 <span className="hidden xs:inline">Re-qual</span>
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="prospects" className="space-y-4 sm:space-y-6">
-              <div className="flex flex-col gap-3 sm:gap-4">
+              <div className="flex flex-col gap-4 sm:gap-4">
                 <div className="relative flex-1">
                   <MagnifyingGlass 
-                    size={18} 
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70"
+                    size={20} 
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/70"
                   />
                   <Input
                     placeholder="Search companies..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 glass-effect border-white/30 text-white placeholder:text-white/50 h-10 sm:h-11"
+                    className="pl-11 glass-effect border-white/30 text-white placeholder:text-white/50 h-11 sm:h-12 text-base"
                   />
                 </div>
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 sm:gap-3 flex-wrap">
                   <Select value={industryFilter} onValueChange={setIndustryFilter}>
-                    <SelectTrigger className="flex-1 min-w-[140px] sm:w-[180px] glass-effect border-white/30 text-white h-10 sm:h-11">
+                    <SelectTrigger className="flex-1 min-w-[140px] sm:w-[180px] glass-effect border-white/30 text-white h-11 sm:h-12 text-sm">
                       <SelectValue placeholder="Industry" />
                     </SelectTrigger>
                     <SelectContent className="glass-effect border-white/30">
@@ -368,7 +368,7 @@ function App() {
                     </SelectContent>
                   </Select>
                   <Select value={stateFilter} onValueChange={setStateFilter}>
-                    <SelectTrigger className="flex-1 min-w-[100px] sm:w-[140px] glass-effect border-white/30 text-white h-10 sm:h-11">
+                    <SelectTrigger className="flex-1 min-w-[100px] sm:w-[140px] glass-effect border-white/30 text-white h-11 sm:h-12 text-sm">
                       <SelectValue placeholder="State" />
                     </SelectTrigger>
                     <SelectContent className="glass-effect border-white/30">
@@ -381,7 +381,7 @@ function App() {
                     </SelectContent>
                   </Select>
                   <Select value={minScore.toString()} onValueChange={(val) => setMinScore(Number(val))}>
-                    <SelectTrigger className="flex-1 min-w-[120px] sm:w-[140px] glass-effect border-white/30 text-white h-10 sm:h-11">
+                    <SelectTrigger className="flex-1 min-w-[120px] sm:w-[140px] glass-effect border-white/30 text-white h-11 sm:h-12 text-sm">
                       <SelectValue placeholder="Min Score" />
                     </SelectTrigger>
                     <SelectContent className="glass-effect border-white/30">
@@ -425,7 +425,7 @@ function App() {
                   onBatchDelete={handleBatchDelete}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                   {filteredAndSortedProspects.map(prospect => {
                     const isSelected = selectedProspectIds.has(prospect.id)
                     return (

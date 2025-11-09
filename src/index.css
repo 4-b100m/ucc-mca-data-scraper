@@ -7,13 +7,13 @@
   }
   
   body {
-    font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    font-family: 'IBM Plex Sans', var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     background: linear-gradient(135deg, 
-      oklch(0.25 0.08 250) 0%, 
-      oklch(0.20 0.06 240) 25%,
-      oklch(0.18 0.05 230) 50%,
-      oklch(0.22 0.07 245) 75%,
-      oklch(0.25 0.08 250) 100%
+      oklch(0.25 0.06 250) 0%, 
+      oklch(0.22 0.05 245) 25%,
+      oklch(0.20 0.05 240) 50%,
+      oklch(0.23 0.055 248) 75%,
+      oklch(0.25 0.06 250) 100%
     );
     background-attachment: fixed;
     min-height: 100vh;
@@ -22,25 +22,50 @@
   .font-mono {
     font-family: 'IBM Plex Mono', 'SF Mono', Monaco, 'Cascadia Code', monospace;
   }
+  
+  h1, h2, h3 {
+    font-family: 'IBM Plex Sans', sans-serif;
+    letter-spacing: -0.02em;
+  }
+  
+  h1 {
+    font-weight: 600;
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  
+  h2 {
+    font-weight: 500;
+    font-size: 1.25rem;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  
+  h3 {
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    letter-spacing: 0;
+  }
 }
 
 :root {
-  --background: oklch(0.98 0.01 90 / 0.05);
+  --background: oklch(0.98 0.01 90);
   --foreground: oklch(0.20 0.05 250);
 
-  --card: oklch(1.00 0 0 / 0.65);
+  --card: oklch(1.00 0 0 / 0.70);
   --card-foreground: oklch(0.20 0.05 250);
   
   --popover: oklch(1.00 0 0 / 0.95);
   --popover-foreground: oklch(0.20 0.05 250);
 
-  --primary: oklch(0.65 0.30 45);
-  --primary-foreground: oklch(0.05 0.005 0);
+  --primary: oklch(0.25 0.06 250);
+  --primary-foreground: oklch(1 0 0);
 
   --secondary: oklch(0.65 0.14 210);
   --secondary-foreground: oklch(0.20 0.05 250);
 
-  --muted: oklch(0.92 0.01 90 / 0.5);
+  --muted: oklch(0.92 0.01 90);
   --muted-foreground: oklch(0.50 0.02 270);
 
   --accent: oklch(0.70 0.15 60);
@@ -49,44 +74,43 @@
   --destructive: oklch(0.55 0.35 15);
   --destructive-foreground: oklch(0.98 0.002 0);
 
-  --border: oklch(1 0 0 / 0.15);
-  --input: oklch(1 0 0 / 0.15);
-  --ring: oklch(0.65 0.30 45);
+  --border: oklch(1 0 0 / 0.20);
+  --input: oklch(1 0 0 / 0.20);
+  --ring: oklch(0.70 0.15 60);
 
   --success: oklch(0.60 0.15 145);
   --success-foreground: oklch(1 0 0);
 
-  --warning: oklch(0.75 0.15 75);
+  --warning: oklch(0.70 0.15 60);
   --warning-foreground: oklch(0.20 0.05 250);
 
   --radius: 0.75rem;
 
-  --chart-1: oklch(0.65 0.30 45);
+  --chart-1: oklch(0.70 0.15 60);
   --chart-2: oklch(0.65 0.14 210);
-  --chart-3: oklch(0.70 0.15 60);
-  --chart-4: oklch(0.55 0.32 200);
-  --chart-5: oklch(0.45 0.30 320);
+  --chart-3: oklch(0.25 0.06 250);
+  --chart-4: oklch(0.55 0.12 200);
+  --chart-5: oklch(0.45 0.10 280);
 
-  --sidebar: oklch(0.95 0.001 0);
-  --sidebar-foreground: oklch(0.05 0.005 0);
-  --sidebar-primary: oklch(0.65 0.30 45);
-  --sidebar-primary-foreground: oklch(0.05 0.005 0);
-  --sidebar-accent: oklch(0.85 0.25 280);
-  --sidebar-accent-foreground: oklch(0.05 0.005 0);
-  --sidebar-border: oklch(0.05 0.005 0);
-  --sidebar-ring: oklch(0.65 0.30 45);
+  --sidebar: oklch(0.98 0.01 90);
+  --sidebar-foreground: oklch(0.20 0.05 250);
+  --sidebar-primary: oklch(0.25 0.06 250);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.70 0.15 60);
+  --sidebar-accent-foreground: oklch(0.20 0.05 250);
+  --sidebar-border: oklch(1 0 0 / 0.20);
+  --sidebar-ring: oklch(0.70 0.15 60);
 
-  --shadow-color: oklch(0.05 0.005 0);
-  --shadow-opacity: 1.0;
-  --shadow-blur: 0px;
+  --shadow-color: oklch(0.20 0.05 250);
+  --shadow-opacity: 0.1;
+  --shadow-blur: 20px;
   --shadow-spread: 0px;
-  --shadow-offset-x: 6px;
-  --shadow-offset-y: 6px;
+  --shadow-offset-x: 0px;
+  --shadow-offset-y: 4px;
 
-  --font-sans: Oswald;
-  --font-serif: Roboto Slab;
-  --font-mono: Space Mono;
-  --spacing: 0.20rem;
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', Monaco, monospace;
+  --spacing: 0.25rem;
 }
 
 @theme {
@@ -123,20 +147,24 @@
 }
 
 .glass-effect {
-  background: oklch(1 0 0 / 0.65);
+  background: oklch(1 0 0 / 0.70);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid oklch(1 0 0 / 0.15);
+  border: 1px solid oklch(1 0 0 / 0.20);
+  box-shadow: 0 4px 20px oklch(0.20 0.05 250 / 0.1),
+              0 0 1px oklch(1 0 0 / 0.25) inset;
 }
 
 .mica-effect {
   background: linear-gradient(135deg, 
-    oklch(1 0 0 / 0.7) 0%,
-    oklch(0.98 0.01 250 / 0.6) 100%
+    oklch(1 0 0 / 0.75) 0%,
+    oklch(0.98 0.01 250 / 0.65) 100%
   );
   backdrop-filter: blur(40px) saturate(150%);
   -webkit-backdrop-filter: blur(40px) saturate(150%);
-  border: 1px solid oklch(1 0 0 / 0.2);
+  border: 1px solid oklch(1 0 0 / 0.25);
+  box-shadow: 0 8px 32px oklch(0.20 0.05 250 / 0.12),
+              0 0 1px oklch(1 0 0 / 0.3) inset;
 }
 
 @keyframes ticker-slide {
