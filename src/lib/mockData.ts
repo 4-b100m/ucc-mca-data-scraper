@@ -7,7 +7,12 @@ import {
   DashboardStats,
   IndustryType,
   HealthGrade,
-  SignalType
+  SignalType,
+  CryptoPrice,
+  CryptoPriceHistory,
+  CryptoData,
+  SentimentData,
+  PriceAlert
 } from './types'
 
 const INDUSTRIES: IndustryType[] = ['restaurant', 'retail', 'construction', 'healthcare', 'manufacturing', 'services', 'technology']
@@ -266,4 +271,126 @@ export function generateDashboardStats(prospects: Prospect[], portfolio: Portfol
     portfolioAtRisk,
     avgHealthGrade
   }
+}
+
+// Crypto & Sentiment Data Generation
+const CRYPTO_SYMBOLS = [
+  { symbol: 'BTC', name: 'Bitcoin', basePrice: 45000 },
+  { symbol: 'ETH', name: 'Ethereum', basePrice: 2500 },
+  { symbol: 'BNB', name: 'Binance Coin', basePrice: 350 },
+  { symbol: 'SOL', name: 'Solana', basePrice: 110 },
+  { symbol: 'ADA', name: 'Cardano', basePrice: 0.55 }
+]
+
+export function generateCryptoPrice(symbol: string, name: string, basePrice: number): CryptoPrice {
+  const priceVariation = (Math.random() - 0.5) * 0.2
+  const currentPrice = basePrice * (1 + priceVariation)
+  const priceChange24h = basePrice * (Math.random() - 0.5) * 0.15
+  const priceChangePercentage24h = (priceChange24h / basePrice) * 100
+  
+  return {
+    symbol,
+    name,
+    currentPrice: Math.round(currentPrice * 100) / 100,
+    priceChange24h: Math.round(priceChange24h * 100) / 100,
+    priceChangePercentage24h: Math.round(priceChangePercentage24h * 100) / 100,
+    high24h: Math.round(currentPrice * 1.08 * 100) / 100,
+    low24h: Math.round(currentPrice * 0.92 * 100) / 100,
+    lastUpdated: new Date().toISOString()
+  }
+}
+
+export function generateCryptoPriceHistory(basePrice: number, points: number = 24): CryptoPriceHistory[] {
+  const history: CryptoPriceHistory[] = []
+  let price = basePrice
+  
+  for (let i = points - 1; i >= 0; i--) {
+    const timestamp = new Date(Date.now() - i * 60 * 60 * 1000).toISOString()
+    const change = (Math.random() - 0.5) * 0.05
+    price = price * (1 + change)
+    
+    history.push({
+      timestamp,
+      price: Math.round(price * 100) / 100
+    })
+  }
+  
+  return history
+}
+
+export function generateCryptoData(): CryptoData[] {
+  return CRYPTO_SYMBOLS.map(({ symbol, name, basePrice }) => ({
+    crypto: generateCryptoPrice(symbol, name, basePrice),
+    priceHistory: generateCryptoPriceHistory(basePrice)
+  }))
+}
+
+export function generateSentimentData(): SentimentData[] {
+  const keywords = ['BTC', 'ETH', 'SOL', 'Stock Market', 'S&P500']
+  const sentiments: ('bullish' | 'bearish' | 'neutral')[] = ['bullish', 'bearish', 'neutral']
+  const hashtagPools = [
+    ['#Bitcoin', '#BTC', '#Crypto', '#HODL', '#ToTheMoon'],
+    ['#Ethereum', '#ETH', '#DeFi', '#Web3', '#SmartContracts'],
+    ['#Solana', '#SOL', '#NFT', '#Blockchain'],
+    ['#Stocks', '#Trading', '#Investing', '#WallStreet'],
+    ['#SP500', '#IndexFunds', '#MarketAnalysis']
+  ]
+  
+  return keywords.map((keyword, idx) => {
+    const sentiment = sentiments[Math.floor(Math.random() * sentiments.length)]
+    const score = sentiment === 'bullish' ? randomInt(60, 95) :
+                  sentiment === 'bearish' ? randomInt(5, 40) :
+                  randomInt(40, 60)
+    
+    const availableHashtags = hashtagPools[idx] || hashtagPools[0]
+    const numHashtags = randomInt(2, 4)
+    const trendingHashtags = availableHashtags
+      .sort(() => Math.random() - 0.5)
+      .slice(0, numHashtags)
+    
+    return {
+      keyword,
+      sentiment,
+      score,
+      mentions: randomInt(500, 50000),
+      trendingHashtags,
+      lastUpdated: new Date().toISOString()
+    }
+  })
+}
+
+export function updateCryptoPrice(crypto: CryptoPrice): CryptoPrice {
+  const change = (Math.random() - 0.5) * 0.02
+  const newPrice = crypto.currentPrice * (1 + change)
+  const priceChange = newPrice - crypto.currentPrice
+  const percentChange = (priceChange / crypto.currentPrice) * 100
+  
+  return {
+    ...crypto,
+    currentPrice: Math.round(newPrice * 100) / 100,
+    priceChange24h: Math.round((crypto.priceChange24h + priceChange) * 100) / 100,
+    priceChangePercentage24h: Math.round((crypto.priceChangePercentage24h + percentChange) * 100) / 100,
+    lastUpdated: new Date().toISOString()
+  }
+}
+
+export function checkPriceAlerts(oldPrice: CryptoPrice, newPrice: CryptoPrice, alerts: PriceAlert[]): PriceAlert[] {
+  const newAlerts: PriceAlert[] = []
+  const priceChange = ((newPrice.currentPrice - oldPrice.currentPrice) / oldPrice.currentPrice) * 100
+  
+  if (Math.abs(priceChange) >= 5) {
+    const alertType = priceChange > 0 ? 'price_up' : 'price_down'
+    const message = `${newPrice.symbol} ${priceChange > 0 ? 'surged' : 'dropped'} ${Math.abs(priceChange).toFixed(2)}% - Now at $${newPrice.currentPrice}`
+    
+    newAlerts.push({
+      id: `alert-${Date.now()}-${newPrice.symbol}`,
+      symbol: newPrice.symbol,
+      alertType,
+      threshold: Math.abs(priceChange),
+      triggeredAt: new Date().toISOString(),
+      message
+    })
+  }
+  
+  return [...alerts, ...newAlerts]
 }
