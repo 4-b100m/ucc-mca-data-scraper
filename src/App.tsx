@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,9 @@ import { ProspectCard } from '@/components/ProspectCard'
 import { ProspectDetailDialog } from '@/components/ProspectDetailDialog'
 import { CompetitorChart } from '@/components/CompetitorChart'
 import { PortfolioMonitor } from '@/components/PortfolioMonitor'
+import { CryptoChart } from '@/components/CryptoChart'
+import { SentimentAnalysis } from '@/components/SentimentAnalysis'
+import { PriceAlerts } from '@/components/PriceAlerts'
 import { AdvancedFilters, AdvancedFilterState, initialFilters } from '@/components/AdvancedFilters'
 import { StaleDataWarning } from '@/components/StaleDataWarning'
 import { BatchOperations } from '@/components/BatchOperations'
@@ -24,22 +27,32 @@ import {
   generateProspects, 
   generateCompetitorData, 
   generatePortfolioCompanies,
-  generateDashboardStats
+  generateDashboardStats,
+  generateCryptoData,
+  generateSentimentData,
+  updateCryptoPrice,
+  checkPriceAlerts
 } from '@/lib/mockData'
-import { Prospect, CompetitorData, PortfolioCompany, IndustryType } from '@/lib/types'
+import { Prospect, CompetitorData, PortfolioCompany, IndustryType, CryptoData, SentimentData, PriceAlert } from '@/lib/types'
 import { 
   Target, 
   ChartBar, 
   Heart, 
   ArrowClockwise,
-  MagnifyingGlass
+  MagnifyingGlass,
+  CurrencyBtc,
+  ChartLineUp
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { Toaster } from '@/components/ui/sonner'
 
 function App() {
   const [prospects, setProspects, deleteProspects] = useKV<Prospect[]>('ucc-prospects', [])
   const [competitors, setCompetitors] = useKV<CompetitorData[]>('competitor-data', [])
   const [portfolio, setPortfolio] = useKV<PortfolioCompany[]>('portfolio-companies', [])
+  const [cryptoData, setCryptoData] = useKV<CryptoData[]>('crypto-data', [])
+  const [sentimentData, setSentimentData] = useKV<SentimentData[]>('sentiment-data', [])
+  const [priceAlerts, setPriceAlerts] = useKV<PriceAlert[]>('price-alerts', [])
   
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -66,7 +79,67 @@ function App() {
       const initialPortfolio = generatePortfolioCompanies(15)
       setPortfolio(initialPortfolio)
     }
-  }, [prospects, competitors, portfolio, setProspects, setCompetitors, setPortfolio])
+    if (!cryptoData || cryptoData.length === 0) {
+      const initialCryptoData = generateCryptoData()
+      setCryptoData(initialCryptoData)
+    }
+    if (!sentimentData || sentimentData.length === 0) {
+      const initialSentimentData = generateSentimentData()
+      setSentimentData(initialSentimentData)
+    }
+  }, [prospects, competitors, portfolio, cryptoData, sentimentData, setProspects, setCompetitors, setPortfolio, setCryptoData, setSentimentData])
+
+  // Real-time crypto price updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (cryptoData && cryptoData.length > 0) {
+        setCryptoData((current) => {
+          if (!current || current.length === 0) return []
+          
+          return current.map(({ crypto, priceHistory }) => {
+            const oldCrypto = crypto
+            const newCrypto = updateCryptoPrice(crypto)
+            
+            // Check for price alerts (5% threshold)
+            const newAlerts = checkPriceAlerts(oldCrypto, newCrypto, priceAlerts || [])
+            if (newAlerts.length > (priceAlerts || []).length) {
+              const latestAlert = newAlerts[newAlerts.length - 1]
+              toast.warning('Price Alert', {
+                description: latestAlert.message
+              })
+              setPriceAlerts(newAlerts)
+            }
+            
+            // Update price history
+            const updatedHistory = [
+              ...priceHistory.slice(1),
+              {
+                timestamp: newCrypto.lastUpdated,
+                price: newCrypto.currentPrice
+              }
+            ]
+            
+            return {
+              crypto: newCrypto,
+              priceHistory: updatedHistory
+            }
+          })
+        })
+      }
+    }, 5000) // Update every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [cryptoData, priceAlerts, setCryptoData, setPriceAlerts])
+
+  // Update sentiment data periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const updatedSentiment = generateSentimentData()
+      setSentimentData(updatedSentiment)
+    }, 30000) // Update every 30 seconds
+
+    return () => clearInterval(interval)
+  }, [setSentimentData])
 
   const stats = generateDashboardStats(prospects || [], portfolio || [])
   
@@ -138,6 +211,18 @@ function App() {
   const handleExportProspect = (prospect: Prospect) => {
     exportProspects([prospect])
   }
+
+  const handleDismissAlert = useCallback((alertId: string) => {
+    setPriceAlerts((current) => {
+      if (!current) return []
+      return current.filter(alert => alert.id !== alertId)
+    })
+  }, [setPriceAlerts])
+
+  const handleDismissAllAlerts = useCallback(() => {
+    setPriceAlerts([])
+    toast.info('All alerts dismissed')
+  }, [setPriceAlerts])
 
   const exportProspects = (prospectsToExport: Prospect[]) => {
     const exportData = prospectsToExport.map(prospect => ({
@@ -320,7 +405,7 @@ function App() {
           )}
 
           <Tabs defaultValue="prospects" className="w-full">
-            <TabsList className="glass-effect grid w-full grid-cols-2 sm:grid-cols-4 mb-4 sm:mb-6 gap-1 sm:gap-0 h-auto sm:h-10 p-1">
+            <TabsList className="glass-effect grid w-full grid-cols-3 sm:grid-cols-6 mb-4 sm:mb-6 gap-1 sm:gap-0 h-auto sm:h-10 p-1">
               <TabsTrigger value="prospects" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
                 <Target size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
                 <span className="hidden xs:inline">Prospects</span>
@@ -332,6 +417,14 @@ function App() {
               <TabsTrigger value="intelligence" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
                 <ChartBar size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
                 <span className="hidden xs:inline">Intelligence</span>
+              </TabsTrigger>
+              <TabsTrigger value="crypto" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
+                <CurrencyBtc size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
+                <span className="hidden xs:inline">Crypto</span>
+              </TabsTrigger>
+              <TabsTrigger value="sentiment" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
+                <ChartLineUp size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
+                <span className="hidden xs:inline">Sentiment</span>
               </TabsTrigger>
               <TabsTrigger value="requalification" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
                 <ArrowClockwise size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
@@ -477,6 +570,35 @@ function App() {
               </div>
             </TabsContent>
 
+            <TabsContent value="crypto" className="space-y-4 sm:space-y-6">
+              <div className="space-y-4">
+                <div className="glass-effect p-4 sm:p-6 rounded-lg">
+                  <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-white">Real-Time Crypto Tracking</h2>
+                  <p className="text-white/70 mb-4 sm:mb-6 text-sm sm:text-base">
+                    Live cryptocurrency prices with 24-hour history and automated alerts
+                  </p>
+                </div>
+                
+                <PriceAlerts 
+                  alerts={priceAlerts || []} 
+                  onDismiss={handleDismissAlert}
+                  onDismissAll={handleDismissAllAlerts}
+                />
+                
+                <CryptoChart cryptoData={cryptoData || []} />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="sentiment" className="space-y-4 sm:space-y-6">
+              <div className="glass-effect p-4 sm:p-6 rounded-lg">
+                <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-white">Social Sentiment Analysis</h2>
+                <p className="text-white/70 mb-4 sm:mb-6 text-sm sm:text-base">
+                  Real-time sentiment tracking from Twitter, Reddit, and financial forums
+                </p>
+              </div>
+              <SentimentAnalysis sentimentData={sentimentData || []} />
+            </TabsContent>
+
             <TabsContent value="requalification" className="space-y-4 sm:space-y-6">
               <div className="text-center py-8 sm:py-12 glass-effect rounded-lg p-6 sm:p-8">
                 <ArrowClockwise size={40} weight="fill" className="mx-auto mb-4 text-white/70 sm:w-12 sm:h-12" />
@@ -501,6 +623,7 @@ function App() {
         onUnclaim={handleUnclaimLead}
         onExport={handleExportProspect}
       />
+      <Toaster />
     </div>
   )
 }
