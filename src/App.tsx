@@ -44,6 +44,7 @@ import {
   ChartLineUp
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { Toaster } from '@/components/ui/sonner'
 
 function App() {
   const [prospects, setProspects, deleteProspects] = useKV<Prospect[]>('ucc-prospects', [])
@@ -622,6 +623,7 @@ function App() {
         onUnclaim={handleUnclaimLead}
         onExport={handleExportProspect}
       />
+      <Toaster />
     </div>
   )
 }
