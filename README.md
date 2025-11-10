@@ -1,5 +1,6 @@
 # UCC-MCA Intelligence Platform
 
+<<<<<<< HEAD
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 [![React](https://img.shields.io/badge/React-19.0-blue.svg)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
@@ -32,6 +33,24 @@ A comprehensive merchant cash advance intelligence platform that transforms UCC 
 
 The platform supports flexible data export in multiple formats:
 
+=======
+A comprehensive merchant cash advance intelligence platform that transforms UCC filing data into actionable business opportunities through automated scraping, real-time health monitoring, growth signal detection, and ML-powered lead qualification.
+
+## Features
+
+### Core Capabilities
+- **Prospect Dashboard**: Displays prioritized list of UCC default prospects with scores, growth signals, and health grades
+- **Health Scoring**: Real-time business health monitoring with sentiment analysis and violation tracking
+- **Growth Signal Detection**: Automated detection of hiring, permits, contracts, expansion, and equipment signals
+- **Competitor Intelligence**: Market analysis of UCC filing activity by secured parties
+- **Portfolio Monitoring**: Track funded companies with health alerts and risk indicators
+- **Lead Re-qualification Engine**: Resurrect "dead" leads by detecting new growth/risk signals
+
+### Data Export
+
+The platform supports flexible data export in multiple formats:
+
+>>>>>>> origin/main
 #### Export Formats
 - **JSON**: Structured data format ideal for API integration and programmatic processing
 - **CSV**: Spreadsheet-compatible format perfect for Excel, Google Sheets, and CRM imports
@@ -108,6 +127,7 @@ npm run preview
 ## Project Structure
 
 ```
+<<<<<<< HEAD
 ./src
   /components           # React components
     /ui                # Reusable UI components (Radix-based)
@@ -144,6 +164,24 @@ npm run preview
   main.tsx              # Application entry point
   index.css             # Global CSS imports
   main.css              # Main stylesheet
+=======
+/src
+  /components        # React components
+    /ui             # Reusable UI components (Radix-based)
+    ProspectCard.tsx
+    ProspectDetailDialog.tsx
+    AdvancedFilters.tsx
+    BatchOperations.tsx
+    CompetitorChart.tsx
+    PortfolioMonitor.tsx
+    StatsOverview.tsx
+  /lib              # Utilities and types
+    types.ts        # TypeScript type definitions
+    mockData.ts     # Mock data generators
+    utils.ts        # Utility functions
+    exportUtils.ts  # Export functionality (JSON/CSV)
+  App.tsx           # Main application component
+>>>>>>> origin/main
 ```
 
 ## Competitive Analysis
@@ -169,12 +207,15 @@ See [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) for the full analysis a
 - **Logic Analysis**: See [LOGIC_ANALYSIS.md](./LOGIC_ANALYSIS.md) for implementation details
 - **Security**: See [SECURITY.md](./SECURITY.md) for security policies
 - **Competitive Analysis**: See [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) for market research and improvement roadmap
+<<<<<<< HEAD
 - **Agentic Forces**: See [AGENTIC_FORCES.md](./AGENTIC_FORCES.md) for AI agent orchestration system documentation
 - **Implementation Summary**: See [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) for implementation details
 
 ## Contributing
 
 Contributions are welcome! Please read our [Contributing Guidelines](./CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+=======
+>>>>>>> origin/main
 
 ## License
 

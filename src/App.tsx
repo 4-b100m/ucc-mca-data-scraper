@@ -28,6 +28,7 @@ import {
 } from '@/lib/mockData'
 import { Prospect, CompetitorData, PortfolioCompany, IndustryType } from '@/lib/types'
 import { exportProspects, ExportFormat } from '@/lib/exportUtils'
+import { exportProspects, ExportFormat } from '@/lib/exportUtils'
 import { 
   Target, 
   ChartBar, 
@@ -123,6 +124,19 @@ function App() {
     })
   }
 
+  
+  // Track user actions for agentic analysis
+  const trackAction = (type: string, details: Record<string, any> = {}) => {
+    setUserActions((current) => {
+      const newAction: UserAction = {
+        type,
+        timestamp: new Date().toISOString(),
+        details
+      }
+      return [...(current || []), newAction].slice(-100) // Keep last 100 actions
+    })
+  }
+
   const handleRefreshData = () => {
     const now = new Date().toISOString()
     setProspects((current) => {
@@ -137,6 +151,7 @@ function App() {
     })
     setLastDataRefresh(now)
     trackAction('refresh-data')
+    trackAction('refresh-data')
     toast.success('Data refreshed', {
       description: 'All health scores and signals have been updated.'
     })
@@ -145,6 +160,7 @@ function App() {
   const handleProspectSelect = (prospect: Prospect) => {
     setSelectedProspect(prospect)
     setDialogOpen(true)
+    trackAction('prospect-select', { prospectId: prospect.id })
     trackAction('prospect-select', { prospectId: prospect.id })
   }
 
@@ -166,6 +182,7 @@ function App() {
     })
     setSelectedProspect(null)
     setDialogOpen(false)
+    trackAction('claim', { prospectId: prospect.id })
     trackAction('claim', { prospectId: prospect.id })
     toast.success('Lead claimed successfully', {
       description: `${prospect.companyName} has been added to your pipeline.`
@@ -193,8 +210,26 @@ function App() {
 
   const handleExportProspect = (prospect: Prospect) => {
     handleExportProspects([prospect])
+    handleExportProspects([prospect])
   }
 
+  const handleExportProspects = (prospectsToExport: Prospect[]) => {
+    try {
+      const filterInfo = searchQuery || industryFilter !== 'all' || stateFilter !== 'all' || minScore > 0
+        ? 'filtered'
+        : undefined
+      
+      exportProspects(prospectsToExport, exportFormat, filterInfo)
+      
+      const formatLabel = exportFormat.toUpperCase()
+      toast.success(`Prospect(s) exported as ${formatLabel}`, {
+        description: `${prospectsToExport.length} lead(s) exported successfully.`
+      })
+    } catch (error) {
+      toast.error('Export failed', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred'
+      })
+    }
   const handleExportProspects = (prospectsToExport: Prospect[]) => {
     try {
       const filterInfo = searchQuery || industryFilter !== 'all' || stateFilter !== 'all' || minScore > 0
@@ -234,6 +269,7 @@ function App() {
 
   const handleBatchExport = (ids: string[]) => {
     const prospectsToExport = (prospects || []).filter(p => ids.includes(p.id))
+    handleExportProspects(prospectsToExport)
     handleExportProspects(prospectsToExport)
   }
 
@@ -452,6 +488,10 @@ function App() {
                 <Robot size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
                 <span className="hidden xs:inline">Agentic</span>
               </TabsTrigger>
+              <TabsTrigger value="agentic" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-2 sm:py-0">
+                <Robot size={16} weight="fill" className="sm:w-[18px] sm:h-[18px]" />
+                <span className="hidden xs:inline">Agentic</span>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="prospects" className="space-y-4 sm:space-y-6">
@@ -504,6 +544,15 @@ function App() {
                       <SelectItem value="50">50+</SelectItem>
                       <SelectItem value="70">70+ (High)</SelectItem>
                       <SelectItem value="85">85+ (Elite)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={exportFormat} onValueChange={(val) => setExportFormat(val as ExportFormat)}>
+                    <SelectTrigger className="flex-1 min-w-[110px] sm:w-[130px] glass-effect border-white/30 text-white h-10 sm:h-11">
+                      <SelectValue placeholder="Export Format" />
+                    </SelectTrigger>
+                    <SelectContent className="glass-effect border-white/30">
+                      <SelectItem value="json">Export: JSON</SelectItem>
+                      <SelectItem value="csv">Export: CSV</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select value={exportFormat} onValueChange={(val) => setExportFormat(val as ExportFormat)}>
@@ -619,6 +668,10 @@ function App() {
                   Upload Lead List
                 </Button>
               </div>
+            </TabsContent>
+
+            <TabsContent value="agentic" className="space-y-4 sm:space-y-6">
+              <AgenticDashboard agentic={agentic} />
             </TabsContent>
 
             <TabsContent value="agentic" className="space-y-4 sm:space-y-6">
