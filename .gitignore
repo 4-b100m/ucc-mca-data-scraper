@@ -32,3 +32,14 @@ pids
 .devcontainer/
 
 .spark-workbench-id
+
+
+#Ignore insiders AI rules
+.github/instructions/codacy.instructions.md
+
+# Local configuration and generated files
+.hintrc
+.specstory/
+*.code-workspace
+.github/copilot-instructions.md
+.vscode/
