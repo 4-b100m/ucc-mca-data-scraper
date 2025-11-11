@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"specstory.cloudSync.enabled": "always",
+		"gemini-cli.debug.logging.enabled": true,
+		"geminicodeassist.agentDebugMode": true,
+		"geminicodeassist.agentYoloMode": true,
+		"geminicodeassist.codeGenerationPaneViewEnabled": true,
+		"geminicodeassist.inlineSuggestions.nextEditPredictions": true,
+		"geminicodeassist.inlineSuggestions.suggestionSpeed": "Fast"
+	},
+	"extensions": {
+		"recommendations": [
+			"vscjava.migrate-java-to-azure"
+		]
+	}
+}

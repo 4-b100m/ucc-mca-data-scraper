@@ -18,10 +18,12 @@ import {
   Warning,
   TrendUp,
   Shield,
-  Sparkle
+  Sparkle,
+  Users
 } from '@phosphor-icons/react'
 import { Improvement, ImprovementPriority, ImprovementCategory } from '@/lib/agentic/types'
 import { UseAgenticEngineResult } from '@/hooks/use-agentic-engine'
+import CompetitorAnalysis from './CompetitorAnalysis'
 
 interface AgenticDashboardProps {
   agentic: UseAgenticEngineResult
@@ -134,12 +136,16 @@ export function AgenticDashboard({ agentic }: AgenticDashboardProps) {
 
         {/* Improvements Tabs */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="overview">
               Overview ({improvements.length})
             </TabsTrigger>
             <TabsTrigger value="pending">
               Pending ({pendingImprovements.length})
+            </TabsTrigger>
+            <TabsTrigger value="competitor">
+              <Users className="w-4 h-4 mr-2" />
+              Competitors
             </TabsTrigger>
           </TabsList>
 
@@ -190,6 +196,9 @@ export function AgenticDashboard({ agentic }: AgenticDashboardProps) {
                 />
               ))
             )}
+          </TabsContent>
+          <TabsContent value="competitor">
+            <CompetitorAnalysis />
           </TabsContent>
         </Tabs>
       </div>

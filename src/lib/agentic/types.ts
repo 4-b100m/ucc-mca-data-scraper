@@ -11,6 +11,7 @@ export type AgentRole =
   | 'security'
   | 'ux-enhancer'
   | 'quality-assurance'
+  | 'competitor-agent'
 
 export type ImprovementCategory =
   | 'performance'

@@ -35,7 +35,7 @@ export class AgenticEngine {
       safetyThreshold: 80, // Only auto-execute if safety score >= 80
       maxDailyImprovements: 3,
       reviewRequired: ['security', 'data-quality'], // These always need review
-      enabledAgents: ['data-analyzer', 'optimizer', 'security', 'ux-enhancer'],
+      enabledAgents: ['data-analyzer', 'optimizer', 'security', 'ux-enhancer', 'competitor-agent'],
       ...config
     }
   }
