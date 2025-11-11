@@ -191,7 +191,7 @@ describe('DataAnalyzerAgent', () => {
         {
           id: '1',
           companyName: 'Incomplete Company',
-          industry: 'Tech'
+          industry: 'Tech',
           // Missing most fields
         }
       ]

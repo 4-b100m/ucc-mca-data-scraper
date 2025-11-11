@@ -15,7 +15,7 @@ The project uses [Vitest](https://vitest.dev/) as the testing framework, chosen 
 
 Tests are organized alongside the code they test:
 
-```
+```plaintext
 src/
 ├── lib/
 │   └── agentic/
