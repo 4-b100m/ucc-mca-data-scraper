@@ -19,6 +19,8 @@ export type ImprovementCategory =
   | 'usability'
   | 'data-quality'
   | 'feature-enhancement'
+  | 'strategic'
+  | 'competitor-intelligence'
 
 export type ImprovementPriority = 'critical' | 'high' | 'medium' | 'low'
 
