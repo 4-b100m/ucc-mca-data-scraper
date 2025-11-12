@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { AgenticEngine } from '@/lib/agentic/AgenticEngine'
+import { AgentCallbackClient } from '@/lib/agentic/AgentCallbackClient'
 import { SystemContext, Improvement, ImprovementStatus, AgenticConfig } from '@/lib/agentic/types'
 
 export interface UseAgenticEngineResult {
@@ -19,12 +20,27 @@ export interface UseAgenticEngineResult {
   systemHealth: ReturnType<AgenticEngine['getSystemHealth']>
 }
 
-export function useAgenticEngine(context: SystemContext, config?: Partial<AgenticConfig>): UseAgenticEngineResult {
-  const [engine] = useState(() => new AgenticEngine(config))
+export interface UseAgenticEngineOptions {
+  callbackClient?: AgentCallbackClient
+}
+
+export function useAgenticEngine(
+  context: SystemContext,
+  config?: Partial<AgenticConfig>,
+  options?: UseAgenticEngineOptions
+): UseAgenticEngineResult {
+  const [engine] = useState(() => new AgenticEngine(config, { callbackClient: options?.callbackClient }))
   const [isRunning, setIsRunning] = useState(false)
   const [improvements, setImprovements] = useKV<Improvement[]>('agentic-improvements', [])
   const [lastRunTime, setLastRunTime] = useKV<string>('agentic-last-run', '')
   const [systemHealth, setSystemHealth] = useState(engine.getSystemHealth())
+
+  useEffect(() => {
+    engine.setCallbackClient(options?.callbackClient ?? null)
+    return () => {
+      engine.setCallbackClient(null)
+    }
+  }, [engine, options?.callbackClient])
 
   // Run autonomous cycle
   const runCycle = useCallback(async () => {

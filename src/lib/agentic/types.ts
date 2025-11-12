@@ -69,6 +69,16 @@ export interface AgentAnalysis {
   timestamp: string
 }
 
+export interface CouncilReview {
+  id: string
+  startedAt: string
+  completedAt?: string
+  agents: Agent[]
+  analyses: AgentAnalysis[]
+  improvements: Improvement[]
+  status: 'in-progress' | 'completed' | 'failed'
+}
+
 export interface Finding {
   id: string
   category: ImprovementCategory
@@ -134,4 +144,42 @@ export interface AgenticConfig {
   maxDailyImprovements: number
   reviewRequired: ImprovementCategory[]
   enabledAgents: AgentRole[]
+}
+
+export interface AgentCallbackPayload {
+  review: CouncilReview
+  executedImprovements: Improvement[]
+  pendingImprovements: Improvement[]
+}
+
+export interface AgentCallbackTransport {
+  connect?: () => Promise<void> | void
+  disconnect?: () => Promise<void> | void
+  send: (payload: AgentCallbackPayload) => Promise<unknown> | unknown
+}
+
+export interface AgentCallbackOptions {
+  /**
+   * Endpoint to POST callback payloads to. When provided, the client will use `fetch`
+   * with the supplied headers instead of a custom transport.
+   */
+  endpoint?: string
+  /**
+   * Optional transport implementation. When present, the transport's `send` method will
+   * be used to deliver payloads. The transport may also expose `connect`/`disconnect`
+   * hooks which will be invoked when available.
+   */
+  transport?: AgentCallbackTransport
+  /**
+   * Number of retry attempts before giving up on a callback request.
+   */
+  retries?: number
+  /**
+   * Initial delay in milliseconds before retrying a failed request.
+   */
+  retryDelayMs?: number
+  /**
+   * Optional headers to include when using the default `fetch` transport.
+   */
+  headers?: Record<string, string>
 }
