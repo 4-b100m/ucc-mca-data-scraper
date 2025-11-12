@@ -9,7 +9,8 @@
         "build": "tsc -b --noCheck && vite build",
         "lint": "eslint .",
         "optimize": "vite optimize",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "postinstall": "node ./scripts/ensure-main-branch.mjs"
     },
     "dependencies": {
         "@github/spark": "^0.39.0",
