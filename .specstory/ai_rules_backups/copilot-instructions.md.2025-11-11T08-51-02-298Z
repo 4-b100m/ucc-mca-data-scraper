@@ -1,0 +1,48 @@
+
+## HEADERS
+
+## TECH STACK
+
+## PROJECT DOCUMENTATION & CONTEXT SYSTEM
+
+## CODING STANDARDS
+
+## WORKFLOW & RELEASE RULES
+
+### Git Workflow
+
+**Merging Branches:**
+
+*   To merge all branches into your current branch:
+    1.  List all branches using `git branch --all`.
+    2.  For each branch to merge (excluding the current branch), run `git merge <branch-name>`.
+    3.  Resolve any merge conflicts.
+    4.  Push changes using `git push origin <current-branch>`.
+*   To merge your current branch into the `main` branch:
+    1.  Switch to the `main` branch: `git checkout main`.
+    2.  Merge your current branch into `main`: `git merge <current-branch>`.
+    3.  Resolve any merge conflicts.
+    4.  Push the updated `main` branch: `git push origin main`.
+
+**Resolving Merge Conflicts:**
+
+1.  Check for files with conflicts using `git status`.
+2.  Open each conflicted file and locate conflict markers (`<<<<<<< HEAD`, `=======`, `>>>>>>> branch-name`).
+3.  Edit the files, keeping the desired content and removing the conflict markers.
+4.  Stage the resolved files: `git add <file-name>`.
+5.  Commit the resolution: `git commit -m "Resolve merge conflicts"`.
+
+**Pull Request Flattening and Merging:**
+
+*   **Process:** Review all open pull requests, address suggestions within comments (either by fixing or marking as TODO), and merge unique content into the `main` branch.
+*   This process aims to flatten and integrate all relevant changes.
+
+## DEBUGGING
+
+**"Element with id Copilot on My Behalf... is already registered" Notification:**
+
+*   This notification from VS Code indicates the GitHub Pull Request extension (or related) has already registered a UI element.
+*   This is generally safe to ignore.
+*   If repeated issues or UI glitches occur, restart VS Code or update extensions.
+
+## REFERENCES
