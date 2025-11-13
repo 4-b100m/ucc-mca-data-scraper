@@ -6,11 +6,13 @@ A comprehensive merchant cash advance intelligence platform that transforms UCC 
 
 ### Core Capabilities
 - **Prospect Dashboard**: Displays prioritized list of UCC default prospects with scores, growth signals, and health grades
+- **Data Ingestion & Enrichment Pipeline**: Automated data fetching, enrichment, and refresh from multiple sources
 - **Health Scoring**: Real-time business health monitoring with sentiment analysis and violation tracking
 - **Growth Signal Detection**: Automated detection of hiring, permits, contracts, expansion, and equipment signals
 - **Competitor Intelligence**: Market analysis of UCC filing activity by secured parties
 - **Portfolio Monitoring**: Track funded companies with health alerts and risk indicators
 - **Lead Re-qualification Engine**: Resurrect "dead" leads by detecting new growth/risk signals
+- **Agentic Forces**: Autonomous system improvement with AI agents for continuous optimization
 
 ### Data Export
 
@@ -69,6 +71,26 @@ The platform supports flexible data export in multiple formats:
 npm install
 ```
 
+### Configuration
+
+1. Copy the environment template:
+```bash
+cp .env.example .env
+```
+
+2. Edit `.env` and configure your data sources:
+```bash
+# Use mock data for development (default)
+VITE_USE_MOCK_DATA=true
+
+# For production with real data, set to false and configure API keys
+VITE_USE_MOCK_DATA=false
+VITE_UCC_API_ENDPOINT=https://api.ucc-filings.com/v1
+VITE_UCC_API_KEY=your_api_key_here
+```
+
+See [DATA_PIPELINE.md](./DATA_PIPELINE.md) for detailed configuration options.
+
 ### Development
 
 ```bash
@@ -76,6 +98,13 @@ npm run dev
 ```
 
 The application will be available at `http://localhost:5000` (or next available port).
+
+### Demo
+
+Run the data pipeline demo:
+```bash
+npx tsx demo-data-pipeline.ts
+```
 
 ### Build
 
@@ -127,10 +156,44 @@ Based on competitive analysis of similar B2B SaaS platforms (D&B, ZoomInfo, UCC 
 
 See [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) for the full analysis and roadmap of planned improvements.
 
+## Data Pipeline
+
+The platform includes a comprehensive automated data ingestion and enrichment pipeline:
+
+### Features
+- **Multi-Source Ingestion**: Fetch UCC filings from state portals, APIs, and databases
+- **Intelligent Enrichment**: Automatically detect growth signals, calculate health scores, and estimate revenue
+- **Scheduled Refresh**: Periodic updates with configurable intervals
+- **Error Handling**: Circuit breakers, retry logic, and comprehensive error handling
+- **Real-time Monitoring**: Event-based status updates and metrics
+
+### Quick Start
+
+**Development Mode** (Mock Data):
+```bash
+# Uses generated mock data
+npm run dev
+```
+
+**Production Mode** (Real Data):
+```bash
+# Configure .env with real API keys
+VITE_USE_MOCK_DATA=false
+VITE_ENABLE_REALTIME_INGESTION=true
+
+# Start the app
+npm run dev
+```
+
+See [DATA_PIPELINE.md](./DATA_PIPELINE.md) for comprehensive documentation.
+
 ## Documentation
 
+- **Data Pipeline**: See [DATA_PIPELINE.md](./DATA_PIPELINE.md) for ingestion and enrichment details
+- **Agentic Forces**: See [AGENTIC_FORCES.md](./AGENTIC_FORCES.md) for autonomous improvement system
 - **Product Requirements**: See [PRD.md](./PRD.md) for detailed feature specifications
 - **Logic Analysis**: See [LOGIC_ANALYSIS.md](./LOGIC_ANALYSIS.md) for implementation details
+- **Testing**: See [TESTING.md](./TESTING.md) for testing guidelines
 - **Security**: See [SECURITY.md](./SECURITY.md) for security policies
 - **Competitive Analysis**: See [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) for market research and improvement roadmap
 
