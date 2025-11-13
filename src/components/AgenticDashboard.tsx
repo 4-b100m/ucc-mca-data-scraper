@@ -10,26 +10,29 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Robot, 
-  Brain, 
-  CheckCircle, 
-  Clock, 
+import {
+  Robot,
+  Brain,
+  CheckCircle,
+  Clock,
   Warning,
   TrendUp,
   Shield,
   Sparkle,
-  Users
+  Users,
+  Target
 } from '@phosphor-icons/react'
 import { Improvement, ImprovementPriority, ImprovementCategory } from '@/lib/agentic/types'
 import { UseAgenticEngineResult } from '@/hooks/use-agentic-engine'
 import CompetitorAnalysis from './CompetitorAnalysis'
+import { CompetitorData } from '@/lib/types'
 
 interface AgenticDashboardProps {
   agentic: UseAgenticEngineResult
+  competitors: CompetitorData[]
 }
 
-export function AgenticDashboard({ agentic }: AgenticDashboardProps) {
+export function AgenticDashboard({ agentic, competitors }: AgenticDashboardProps) {
   const [selectedTab, setSelectedTab] = useState('overview')
   const { systemHealth, improvements, isRunning, runCycle, approveImprovement } = agentic
 
@@ -45,7 +48,9 @@ export function AgenticDashboard({ agentic }: AgenticDashboardProps) {
     'security': <Shield className="w-4 h-4" />,
     'usability': <Sparkle className="w-4 h-4" />,
     'data-quality': <Brain className="w-4 h-4" />,
-    'feature-enhancement': <CheckCircle className="w-4 h-4" />
+    'feature-enhancement': <CheckCircle className="w-4 h-4" />,
+    'strategic': <Target className="w-4 h-4" />,
+    'competitor-intelligence': <Users className="w-4 h-4" />
   }
 
   const pendingImprovements = improvements.filter(i => i.status === 'detected' || i.status === 'approved')
@@ -198,7 +203,10 @@ export function AgenticDashboard({ agentic }: AgenticDashboardProps) {
             )}
           </TabsContent>
           <TabsContent value="competitor">
-            <CompetitorAnalysis />
+            <CompetitorAnalysis
+              competitors={competitors}
+              improvements={improvements}
+            />
           </TabsContent>
         </Tabs>
       </div>
