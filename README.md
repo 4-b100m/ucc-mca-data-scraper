@@ -92,27 +92,35 @@ npm run preview
 ## Project Structure
 
 ```
-/src
+/src                 # Source code
   /components        # React components
     /ui             # Reusable UI components (Radix-based)
-    ProspectCard.tsx
-    ProspectDetailDialog.tsx
-    AdvancedFilters.tsx
-    BatchOperations.tsx
-    CompetitorChart.tsx
-    PortfolioMonitor.tsx
-    StatsOverview.tsx
   /lib              # Utilities and types
+    /agentic        # Autonomous improvement system
     types.ts        # TypeScript type definitions
     mockData.ts     # Mock data generators
     utils.ts        # Utility functions
     exportUtils.ts  # Export functionality (JSON/CSV)
+  /hooks            # Custom React hooks
+  /styles           # CSS and theme files
   App.tsx           # Main application component
+
+/docs               # Documentation
+  PRD.md           # Product Requirements Document
+  COMPETITIVE_ANALYSIS.md
+  LOGIC_ANALYSIS.md
+  IMPLEMENTATION_SUMMARY.md
+  TESTING.md
+  AGENTIC_FORCES.md
+  /archive          # Historical documentation
+
+/examples           # Example code and demos
+  demo-agentic.ts  # Agentic system demonstration
 ```
 
 ## Competitive Analysis
 
-See [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) for detailed research on similar applications and implemented improvements based on industry best practices.
+See [COMPETITIVE_ANALYSIS.md](./docs/COMPETITIVE_ANALYSIS.md) for detailed research on similar applications and implemented improvements based on industry best practices.
 
 ## Recent Improvements
 
@@ -125,14 +133,18 @@ Based on competitive analysis of similar B2B SaaS platforms (D&B, ZoomInfo, UCC 
    - Timestamped filenames with filter context
    - Comprehensive field coverage in exports
 
-See [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) for the full analysis and roadmap of planned improvements.
+See [COMPETITIVE_ANALYSIS.md](./docs/COMPETITIVE_ANALYSIS.md) for the full analysis and roadmap of planned improvements.
 
 ## Documentation
 
-- **Product Requirements**: See [PRD.md](./PRD.md) for detailed feature specifications
-- **Logic Analysis**: See [LOGIC_ANALYSIS.md](./LOGIC_ANALYSIS.md) for implementation details
+- **Product Requirements**: See [PRD.md](./docs/PRD.md) for detailed feature specifications
+- **Agentic Forces**: See [AGENTIC_FORCES.md](./docs/AGENTIC_FORCES.md) for autonomous improvement system documentation
+- **Logic Analysis**: See [LOGIC_ANALYSIS.md](./docs/LOGIC_ANALYSIS.md) for implementation details
+- **Testing**: See [TESTING.md](./docs/TESTING.md) for testing guidelines and strategies
+- **Implementation Summary**: See [IMPLEMENTATION_SUMMARY.md](./docs/IMPLEMENTATION_SUMMARY.md) for development history
 - **Security**: See [SECURITY.md](./SECURITY.md) for security policies
-- **Competitive Analysis**: See [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) for market research and improvement roadmap
+- **Competitive Analysis**: See [COMPETITIVE_ANALYSIS.md](./docs/COMPETITIVE_ANALYSIS.md) for market research and improvement roadmap
+- **Contributing**: See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines
 
 ## License
 
