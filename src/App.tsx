@@ -221,6 +221,13 @@ function App() {
         ? 'filtered'
         : undefined
       
+      if (!exportFormat) {
+        toast.error('Export failed', {
+          description: 'Export format not set'
+        })
+        return
+      }
+      
       exportProspects(prospectsToExport, exportFormat, filterInfo)
       
       const formatLabel = exportFormat.toUpperCase()
