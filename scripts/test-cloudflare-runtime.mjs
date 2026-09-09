@@ -39,7 +39,7 @@ const worker = new Miniflare(
     port: 0,
     cf: false,
     telemetry: { enabled: false },
-    bindings: { ENVIRONMENT: 'local-dependency-smoke' },
+    bindings: { ENVIRONMENT: 'local-dependency-smoke', DEPLOYMENT_SHA: 'a'.repeat(40) },
     outboundService: () => {
       outboundRequests += 1
       throw new Error('This local smoke must never contact external services')
@@ -49,7 +49,11 @@ const worker = new Miniflare(
 try {
   const health = await worker.dispatchFetch('http://localhost/health')
   assert.equal(health.status, 200)
-  assert.deepEqual(await health.json(), { ok: true, env: 'local-dependency-smoke' })
+  assert.deepEqual(await health.json(), {
+    ok: true,
+    env: 'local-dependency-smoke',
+    revision: 'a'.repeat(40)
+  })
   const protectedRoute = await worker.dispatchFetch('http://localhost/api/prospects')
   assert.equal(protectedRoute.status, 401)
   const missing = await worker.dispatchFetch('http://localhost/does-not-exist')
