@@ -16,7 +16,11 @@ const app = new Hono<AppBindings>()
 
 /** Public liveness probe (no auth — telos invariant #5: observability default-on). */
 app.get('/health', (c) => {
-  return c.json({ ok: true, env: c.env.ENVIRONMENT })
+  return c.json({
+    ok: true,
+    env: c.env.ENVIRONMENT,
+    ...(c.env.DEPLOYMENT_SHA ? { revision: c.env.DEPLOYMENT_SHA } : {})
+  })
 })
 
 interface ProspectRow {
@@ -68,13 +72,10 @@ app.onError((err, c) => {
 
 /** 404 fallback in the same envelope as the rest of the API. */
 app.notFound((c) => {
-  return c.json(
-    { error: { message: 'Not Found', code: 'NOT_FOUND', statusCode: 404 } },
-    404
-  )
+  return c.json({ error: { message: 'Not Found', code: 'NOT_FOUND', statusCode: 404 } }, 404)
 })
 
 export default {
   fetch: app.fetch,
-  scheduled,
+  scheduled
 }
