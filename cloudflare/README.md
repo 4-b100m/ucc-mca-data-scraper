@@ -24,68 +24,84 @@ cloudflare/
       scheduled.ts        # Cron handler + D1 jobs drain ($0 queue)
 ```
 
-## One-time setup
+## Staging activation
+
+Credential provisioning and delivery are owned by [Limen CLAVIS / #320](https://github.com/4444J99/limen/issues/320).
+This repository owns the resources, migrations, Worker and live acceptance under
+[#239](https://github.com/organvm-iii-ergon/public-record-data-scrapper/issues/239).
+Use the existing protected `CLOUDFLARE_API_TOKEN` Actions secret. Its presence alone
+does not prove D1, KV, R2 or Access authority.
+
+The staging workflow uses Node 24.19.0/npm 11.9.0 and the frozen Cloudflare lock.
+Pull requests run the local Worker and provisioning counterexamples without credentials.
+Accepted main runs the following sequence:
+
+1. Verify the current main revision and all required account/resource metadata.
+2. Reuse or create only `ucc-mca-staging` (D1), `ucc-mca-edge-staging-KV`,
+   `cronus-assets-staging` (R2), and `ucc-mca-edge-staging-api` (Access).
+   List/authentication/pagination errors stop before creation. Existing production
+   IDs and other resources are never adopted, deleted or changed.
+3. Generate `.generated/staging.wrangler.json` from verified resource readbacks.
+   It contains only staging configuration, exact source revision, and absolute
+   source/migration paths. No manual ID copy or production configuration edit is needed.
+4. Apply D1 migrations and require all four starter schema objects, deploy the
+   Worker, then verify live `/health` serves the exact accepted source revision,
+   unauthenticated and forged-token API requests are rejected, and missing routes
+   return 404.
+
+The `cloudflare-staging-RUN-ATTEMPT` Actions artifact retains sanitized provisioning,
+predecessor deployment/version, schema and live receipts. A failed creation may
+leave dedicated resources already created earlier in that run; the next attempt
+reuses them. It never rolls back by deleting databases or buckets. The recorded
+predecessor version identifies an existing Worker rollback target; a null
+predecessor means the complete preflight found no staging Worker.
+
+For a remote retry of accepted main:
+
+```bash
+gh workflow run deploy-cloudflare.yml --ref main -f staging=true
+```
+
+On an already credential-configured executor, a read-only resource plan is:
+
+```bash
+python3 scripts/provision-cloudflare-staging.py --plan
+```
+
+`--apply` performs the bounded creates and writes the generated configuration.
+The workflow owns migration, deployment and acceptance. A provider denial stops
+that execution with the operation, HTTP status and numeric error codes; token
+values and raw API responses never enter receipts. The existing account's Workers
+subdomain and Access organization must resolve. The workflow never activates a
+paid plan or creates a new account-wide identity organization.
+
+### Cloudflare Access
+
+A new dedicated Access application protects only the staging hostname's `/api/*`
+path, with no allow policies. `/health` remains public and the Worker independently
+requires a valid, correctly scoped Access JWT. Existing owned enrollment policies
+are preserved on repeat runs. Application creation does not establish an
+authenticated tenant journey: receipts keep `access_enrollment_verified: false`.
+The existing identity owner must supply an authorized principal and verified
+`org_id` claim before that distinct acceptance predicate can pass.
+
+### Local development and production
 
 ```bash
 cd cloudflare
-npm install
-npx wrangler login
-
-# 1. Create D1, paste the printed database_id into wrangler.toml (all 3 places:
-#    top-level, [env.staging], [env.production] — or create separate DBs).
-npx wrangler d1 create ucc-mca
-
-# 2. Create the KV namespace, paste the printed id into wrangler.toml.
-npx wrangler kv namespace create KV
-
-# 3. Ensure the R2 bucket exists (telos already references `cronus-assets`).
-npx wrangler r2 bucket create cronus-assets         # if not already created
-# npx wrangler r2 bucket create cronus-assets-staging  # for the staging env
-
-# 4. Apply the schema.
-npm run db:migrate:staging      # wrangler d1 migrations apply ucc-mca --env staging
-# npm run db:migrate:production  # when promoting
-
-# 5. Set secrets (NOT in wrangler.toml). Repeat with --env production.
-npx wrangler secret put JWT_SECRET --env staging
-npx wrangler secret put STRIPE_WEBHOOK_SECRET --env staging
-# ...any other ported-service secrets (SENDGRID_API_KEY, TWILIO_*, etc.)
+npm ci --ignore-scripts
+npm run dev
+npm run typecheck
 ```
 
-### Cloudflare Access (identity plane)
-
-Auth is carried by Cloudflare Access, not by our code (telos). Create a Zero
-Trust **Access application** in front of this Worker's route, then:
-
-1. Copy the **team domain** (e.g. `your-team.cloudflareaccess.com`) into the
-   `ACCESS_TEAM_DOMAIN` var in `wrangler.toml`.
-2. Copy the application **Audience (AUD) tag** into the `ACCESS_AUD` var.
-3. Add an `org_id` field to the JWT — via a SAML/OIDC IdP claim mapping or an
-   Access **custom claim**. The verifier accepts both flat `org_id` and
-   namespaced `https://<team>/org_id`. A token without an org is rejected (401).
-
-`ACCESS_TEAM_DOMAIN` / `ACCESS_AUD` are non-secret config, so they live in
-`[vars]` (one set per environment).
-
-## Local dev & deploy
-
-```bash
-npm run dev                 # wrangler dev (local Worker + miniflare D1/KV/R2)
-npm run deploy:staging      # wrangler deploy --env staging
-npm run deploy:production    # wrangler deploy --env production
-npm run typecheck           # tsc --noEmit against the worker tsconfig
-```
-
-CI (`../.github/workflows/deploy-cloudflare.yml`):
-push to `main` → auto-deploy **staging**; `workflow_dispatch` with `confirm=DEPLOY`
-→ deploy **production**. Requires repo secrets `CLOUDFLARE_API_TOKEN`
-(least-privilege) and `CLOUDFLARE_ACCOUNT_ID`.
+Production remains the separate existing manual `confirm=DEPLOY` operation and
+uses production bindings plus its `CLOUDFLARE_ACCOUNT_ID` secret. Staging resource
+reconciliation does not provision or promote production.
 
 ## The strangler plan (how we cross)
 
 1. **Foundation (this directory).** Access auth + org scoping + one real
-   org-scoped read (`GET /api/prospects`) + Cron-drained D1 jobs queue. Once the
-   placeholder IDs/secrets are filled, this `wrangler deploy`s.
+   org-scoped read (`GET /api/prospects`) + Cron-drained D1 jobs queue. The staging workflow provisions its bindings and verifies the deployed revision.
 2. **Port endpoints from `server/routes/*` into `workers/api/src`, one at a
    time — security logic first.** Re-derive nothing: every #234 control
    (org-scoped access, fail-closed webhooks, role checks, input validation)
