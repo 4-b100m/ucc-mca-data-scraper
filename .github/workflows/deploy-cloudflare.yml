@@ -44,7 +44,10 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version: '24.19.0'
+
+      - name: Use the canonical npm version
+        run: npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
 
       - name: Install edge deps
         working-directory: cloudflare
@@ -108,7 +111,10 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version: '24.19.0'
+
+      - name: Use the canonical npm version
+        run: npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
 
       - name: Install edge deps
         working-directory: cloudflare
