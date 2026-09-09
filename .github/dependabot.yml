@@ -1,43 +1,52 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
+  - package-ecosystem: 'npm'
     directories:
-      - "/"
-      - "/apps/desktop"
-      - "/apps/mobile"
-      - "/apps/web"
-      - "/packages/core"
-      - "/packages/ui"
+      - '/'
+      - '/apps/desktop'
+      - '/apps/mobile'
+      - '/apps/web'
+      - '/packages/core'
+      - '/packages/ui'
+      - '/cloudflare'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 3
     groups:
       npm-deps:
-        patterns: ["*"]
-  - package-ecosystem: "github-actions"
+        applies-to: version-updates
+        patterns: ['*']
+        update-types: ['minor', 'patch']
+  - package-ecosystem: 'github-actions'
     directories:
-      - "/"
+      - '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 3
     groups:
       github-actions-deps:
-        patterns: ["*"]
-  - package-ecosystem: "docker"
+        applies-to: version-updates
+        patterns: ['*']
+        update-types: ['minor', 'patch']
+  - package-ecosystem: 'docker'
     directories:
-      - "/"
+      - '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 3
     groups:
       docker-deps:
-        patterns: ["*"]
-  - package-ecosystem: "cargo"
+        applies-to: version-updates
+        patterns: ['*']
+        update-types: ['minor', 'patch']
+  - package-ecosystem: 'cargo'
     directories:
-      - "/apps/desktop/src-tauri"
+      - '/apps/desktop/src-tauri'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 3
     groups:
       cargo-deps:
-        patterns: ["*"]
+        applies-to: version-updates
+        patterns: ['*']
+        update-types: ['minor', 'patch']
