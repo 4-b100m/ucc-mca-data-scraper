@@ -46,14 +46,20 @@ grouped; major updates remain individual reviews. Security updates stay outside
 those version groups. Cloudflare participates in the same intake.
 
 For each update, `validate-dependencies` must complete both frozen installs and
-leave the declarations unchanged. `Dependency review` fails on newly introduced
-high or critical vulnerabilities, including development and unknown scopes.
+leave the declarations unchanged. Its PR-only `Dependency Review` step fails on
+newly introduced high or critical vulnerabilities, including development and
+unknown scopes. This step consolidates the previously disabled standalone
+dependency-review workflow into the active validation job and still runs when
+an earlier validation step fails. A passing push or manual validation run skips
+this PR-only check and does not establish security-delta acceptance.
 It evaluates the changed dependency graph; unchanged vulnerabilities still need
 their own repairs and a passing delta check is not a clean-bill-of-health audit.
 Use the workflow's tested checkout, PR head and lock hashes when reviewing results.
 
-The frontend CI and CI Gate report independent lint, test and build failures
-after installation succeeds. TypeScript diagnostics remain advisory under #236;
+CI Gate reports independent lint, server-test and build failures after
+installation succeeds. The standalone frontend CI workflow remains disabled in
+this pilot; local frontend test results are separate from hosted acceptance.
+TypeScript diagnostics remain advisory under #236;
 backend coverage and opt-in desktop/mobile execution are not acceptance claims.
 Checks running on a candidate branch are not proof of trusted workflow identity.
 Required-check configuration, review and merge authority remain separate gates;

@@ -57,6 +57,16 @@ jobs:
         if: ${{ !cancelled() }}
         run: git diff --exit-code -- package.json package-lock.json 'apps/*/package.json' 'packages/*/package.json' cloudflare/package.json cloudflare/package-lock.json
 
+      - name: Dependency Review
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        id: dependency_review
+        # actions/dependency-review-action v5.0.0
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294
+        with:
+          fail-on-severity: high
+          fail-on-scopes: runtime, development, unknown
+          comment-summary-in-pr: never
+
       - name: Record dependency validation evidence
         if: ${{ !cancelled() }}
         env:
@@ -64,6 +74,7 @@ jobs:
           REVIEW_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
           ROOT_INSTALL: ${{ steps.root_install.outcome }}
           EDGE_INSTALL: ${{ steps.edge_install.outcome }}
+          DEPENDENCY_REVIEW: ${{ steps.dependency_review.outcome }}
         run: |
           {
             echo '## Dependency validation'
@@ -72,6 +83,7 @@ jobs:
             printf 'Tested checkout: `%s`\n\n' "$(git rev-parse HEAD)"
             printf 'Frozen workspace install: %s\n\n' "$ROOT_INSTALL"
             printf 'Frozen Cloudflare install: %s\n\n' "$EDGE_INSTALL"
+            printf 'PR dependency review: %s\n\n' "$DEPENDENCY_REVIEW"
             echo 'Lockfile SHA-256:'
             echo '```'
             sha256sum package-lock.json cloudflare/package-lock.json
