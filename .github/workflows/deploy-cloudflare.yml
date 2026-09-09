@@ -43,7 +43,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install edge deps
         working-directory: cloudflare
@@ -51,23 +51,28 @@ jobs:
 
       # Apply D1 migrations to the REMOTE staging DB BEFORE deploying the Worker,
       # so the new code never goes live against an unmigrated/stale schema.
+      - name: Verify locked Cloudflare CLI starts
+        run: node scripts/verify-cloudflare-toolchain.mjs
+
+      - name: Confirm frozen dependency declarations
+        run: git diff --exit-code -- cloudflare/package.json cloudflare/package-lock.json
+
       - name: Apply D1 migrations (staging)
-        uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: cloudflare
-          command: d1 migrations apply ucc-mca --env staging --remote
+        working-directory: cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          : "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN is not configured}"
+          : "${CLOUDFLARE_ACCOUNT_ID:?CLOUDFLARE_ACCOUNT_ID is not configured}"
+          ./node_modules/.bin/wrangler d1 migrations apply ucc-mca --env staging --remote
 
       - name: Deploy Worker (staging)
-        # TODO: SHA-pin this action (replace the tag with the commit SHA it
-        # resolves to) before trusting it in production CI.
-        uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: cloudflare
-          command: deploy --env staging
+        working-directory: cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: ./node_modules/.bin/wrangler deploy --env staging
 
       # --- How the SPA (apps/web) Pages deploy would attach (left commented;
       #     this workflow stays scoped to the Worker for now) -----------------
@@ -90,25 +95,31 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install edge deps
         working-directory: cloudflare
         run: npm ci --ignore-scripts
 
+      - name: Verify locked Cloudflare CLI starts
+        run: node scripts/verify-cloudflare-toolchain.mjs
+
+      - name: Confirm frozen dependency declarations
+        run: git diff --exit-code -- cloudflare/package.json cloudflare/package-lock.json
+
       - name: Apply D1 migrations (production)
-        uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: cloudflare
-          command: d1 migrations apply ucc-mca --env production --remote
+        working-directory: cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          : "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN is not configured}"
+          : "${CLOUDFLARE_ACCOUNT_ID:?CLOUDFLARE_ACCOUNT_ID is not configured}"
+          ./node_modules/.bin/wrangler d1 migrations apply ucc-mca --env production --remote
 
       - name: Deploy Worker (production)
-        # TODO: SHA-pin this action before trusting it in production CI.
-        uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: cloudflare
-          command: deploy --env production
+        working-directory: cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: ./node_modules/.bin/wrangler deploy --env production
