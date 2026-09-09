@@ -1,9 +1,21 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 
 // Local dependency/runtime smoke. No Wrangler CLI, credentials or remote bindings.
 const edge = new URL('../cloudflare/', import.meta.url)
+const compatibility = JSON.parse(
+  execFileSync(
+    'python3',
+    [
+      '-c',
+      'import json,sys,tomllib; c=tomllib.load(open(sys.argv[1], "rb")); print(json.dumps({"date":c["compatibility_date"],"flags":c.get("compatibility_flags",[])}))',
+      fileURLToPath(new URL('wrangler.toml', edge))
+    ],
+    { encoding: 'utf8' }
+  )
+)
 const requireEdge = createRequire(new URL('package.json', edge))
 const { build } = requireEdge('esbuild')
 const { Miniflare, convertV4MiniflareOptions } = requireEdge('miniflare')
@@ -21,7 +33,8 @@ const worker = new Miniflare(
   convertV4MiniflareOptions({
     script: bundled.outputFiles[0].text,
     modules: true,
-    compatibilityDate: '2024-12-18',
+    compatibilityDate: compatibility.date,
+    compatibilityFlags: compatibility.flags,
     host: '127.0.0.1',
     port: 0,
     cf: false,

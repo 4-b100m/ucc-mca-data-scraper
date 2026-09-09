@@ -114,8 +114,7 @@ Use Node 24.19.0 and npm 11.9.0 with `npm ci`. Wrangler 4.130.0 requires
 Workers types 5.20260908.1; the type-only major update was checked with the
 Worker's strict TypeScript configuration. Wrangler also explicitly resolves
 Miniflare `5.20260908.0-alpha`; this transitive major/prerelease is a reviewed
-security exception, not a routine compatible update. `node
-scripts/test-cloudflare-runtime.mjs` bundles the actual Worker and checks
+security exception, not a routine compatible update. `node scripts/test-cloudflare-runtime.mjs` bundles the actual Worker and checks
 local health/authentication/404 behavior, with telemetry and outbound fetches
 disabled. Hono's 4.13 series closes the current
 request-parser advisories. The narrowly scoped `miniflare` → `sharp` 0.35.4
