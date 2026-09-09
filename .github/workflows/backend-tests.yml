@@ -54,10 +54,8 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps --ignore-scripts
-
-      - name: Install BullMQ and ioredis
-        run: npm install bullmq ioredis --ignore-scripts
+        # BullMQ and ioredis are already declared in the committed workspace lock.
+        run: npm ci --ignore-scripts
 
       - name: Run database migrations
         run: npm run migrate || echo "::warning::Migration step failed"

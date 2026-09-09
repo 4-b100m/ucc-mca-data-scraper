@@ -1,14 +1,12 @@
 # ============================================================================
 # CI Gate — required, hard-failing checks for pull requests
 # ----------------------------------------------------------------------------
-# Release-discipline P0 for issue #239: the existing ci.yml is informational
-# (every step is continue-on-error / `|| true`), so a red build can still be
-# merged. This workflow is the enforceable gate — it FAILS the run on a broken
+# Release-discipline P0 for issue #239: alongside the frontend CI workflow,
+# this workflow FAILS the run on a broken
 # build or a failing server test, so it can be marked a required status check
 # in branch protection on `main` (the one step that needs repo-admin).
 #
-# Verified green at introduction: `npm run build:render` + the server test
-# suite (1294 tests pass with no external services).
+# Install, lint, server correctness tests and the production build must pass.
 #
 # Coverage thresholds are deliberately NOT enforced here: the repo currently
 # sits at ~67% lines vs its declared 80% target, and backend-tests.yml already
@@ -26,7 +24,7 @@ name: CI Gate
 
 on:
   pull_request:
-    branches: [main, master, develop]
+    branches: [main, master, develop, fix/ci-typecheck-yaml-20260908]
   push:
     branches: [main]
   workflow_dispatch:
@@ -41,6 +39,7 @@ concurrency:
 jobs:
   gate:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout code
         # actions/checkout v4.3.0
@@ -54,18 +53,29 @@ jobs:
           cache: npm
 
       - name: Install dependencies
+        id: install
         # --ignore-scripts: don't run untrusted PR lifecycle scripts on the runner.
         run: npm ci --ignore-scripts
 
       - name: Lint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run lint
 
-      - name: Type check (non-blocking — see #236)
+      - name: 'Type check (non-blocking — see #236)'
+        id: typecheck
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         continue-on-error: true
-        run: npx tsc --noEmit || echo "::warning::TypeScript reported errors (non-blocking; tracked in #236)"
+        run: |
+          npx --no-install tsc --noEmit
+
+      - name: Record advisory TypeScript result
+        if: ${{ !cancelled() && steps.typecheck.outcome == 'failure' }}
+        run: echo "::warning::TypeScript reported errors (non-blocking; tracked in issue 236)"
 
       - name: Server tests (correctness only — coverage gate stays informational)
-        run: npx vitest run --config vitest.config.server.ts --coverage.enabled=false
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npx --no-install vitest run --config vitest.config.server.ts --coverage.enabled=false
 
       - name: Production build (frontend + server + worker bundle)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run build:render
