@@ -61,6 +61,12 @@ jobs:
         if: ${{ !cancelled() }}
         run: python3 scripts/test_diagnose_cloudflare.py
 
+      - name: Verify staging account resolution and binding counterexamples
+        if: ${{ !cancelled() && steps.edge_install.outcome == 'success' }}
+        run: |
+          node scripts/verify-cloudflare-account.mjs
+          python3 scripts/test_verify_cloudflare_staging.py
+
       - name: Confirm installs left dependency declarations unchanged
         if: ${{ !cancelled() }}
         run: git diff --exit-code -- package.json package-lock.json 'apps/*/package.json' 'packages/*/package.json' cloudflare/package.json cloudflare/package-lock.json
