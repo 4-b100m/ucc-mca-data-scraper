@@ -16,6 +16,16 @@ updates:
       npm-deps:
         applies-to: version-updates
         patterns: ['*']
+        exclude-patterns:
+          - 'stripe'
+          - 'jose'
+          - 'jsonwebtoken'
+          - 'express'
+          - 'pg'
+          - 'bullmq'
+          - 'hono'
+          - 'wrangler'
+          - '@github/spark'
         update-types: ['minor', 'patch']
   - package-ecosystem: 'github-actions'
     directories:

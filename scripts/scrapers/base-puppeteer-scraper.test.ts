@@ -37,6 +37,14 @@ class TestScraper extends BasePuppeteerScraper {
       return finalize(result)
     })
   }
+
+  async search(): Promise<ScraperResult> {
+    throw new Error('Use runSearch to supply a controlled test result')
+  }
+
+  getManualSearchUrl(): string {
+    return 'https://example.test'
+  }
 }
 
 type PageMock = Page & {

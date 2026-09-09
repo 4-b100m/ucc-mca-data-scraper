@@ -5,5 +5,7 @@ declare module 'jsdom' {
     window: Window & typeof globalThis
 
     reconfigure(options: Record<string, unknown>): void
+
+    serialize(): string
   }
 }

@@ -57,7 +57,8 @@
     "video:validate": "npx tsx scripts/video-production/validate.ts",
     "video:help": "bash scripts/video-production/generate-videos.sh --help",
     "prepare": "husky",
-    "share": "lt --port 5000"
+    "share": "lt --port 5000",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@github/spark": "^0.44.5",
@@ -205,5 +206,6 @@
       "axios": "^1.7.4"
     },
     "esbuild": "0.28.1"
-  }
+  },
+  "packageManager": "npm@11.9.0"
 }

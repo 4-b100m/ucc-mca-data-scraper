@@ -1,30 +1,10 @@
-# ============================================================================
-# CI Gate — required, hard-failing checks for pull requests
-# ----------------------------------------------------------------------------
-# Release-discipline P0 for issue #239: alongside the frontend CI workflow,
-# this workflow FAILS the run on a broken
-# build or a failing server test, so it can be marked a required status check
-# in branch protection on `main` (the one step that needs repo-admin).
-#
-# Install, lint, server correctness tests and the production build must pass.
-#
-# Coverage thresholds are deliberately NOT enforced here: the repo currently
-# sits at ~67% lines vs its declared 80% target, and backend-tests.yml already
-# treats coverage as an informational warning. Raising coverage to 80% is
-# tracked debt, not a per-PR blocker — so this gate runs tests with
-# `--coverage.enabled=false` and enforces only test correctness + a clean build.
-# (vitest.config.server.ts enforces the 80% thresholds whenever CI=true, which
-# is why coverage must be explicitly disabled for this correctness-only gate.)
-#
-# Typecheck is run as a non-blocking signal for now: the build intentionally
-# uses `tsc -b --noCheck` and frontend TS debt is tracked in #236. Flip
-# `continue-on-error` to false once that debt is cleared.
-# ============================================================================
+# Independent compatibility jobs feed the required gate. Formatting failures
+# cannot suppress compiler, test or build evidence. Coverage remains separate.
 name: CI Gate
 
 on:
   pull_request:
-    branches: [main, master, develop, fix/ci-typecheck-yaml-20260908]
+    branches: [main, master, develop]
   push:
     branches: [main]
   workflow_dispatch:
@@ -37,45 +17,102 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  gate:
+  compatibility:
+    name: Compatibility (${{ matrix.check }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        check:
+          [
+            format,
+            lint,
+            typecheck,
+            server-tests,
+            frontend-tests,
+            scraper-tests,
+            policy-tests,
+            build
+          ]
     steps:
       - name: Checkout code
-        # actions/checkout v4.3.0
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-
       - name: Setup Node.js
-        # actions/setup-node v4.4.0
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
-          node-version: 20.x
+          node-version: '24.19.0'
           cache: npm
-
-      - name: Install dependencies
-        id: install
-        # --ignore-scripts: don't run untrusted PR lifecycle scripts on the runner.
-        run: npm ci --ignore-scripts
-
-      - name: Lint
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: npm run lint
-
-      - name: 'Type check (non-blocking — see #236)'
-        id: typecheck
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        continue-on-error: true
+      - name: Use the canonical npm version
+        run: npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
+      - name: Frozen workspace install
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Run independent compatibility check
+        env:
+          CHECK: ${{ matrix.check }}
         run: |
-          npx --no-install tsc --noEmit
+          case "$CHECK" in
+            format) ./node_modules/.bin/prettier --check package.json cloudflare/package.json .github/dependabot.yml .github/workflows/ci-gate.yml .github/workflows/validate-dependencies.yml scripts/dependency-evidence.mjs ;;
+            lint) npm run lint ;;
+            typecheck) npm run typecheck ;;
+            server-tests) ./node_modules/.bin/vitest run --config vitest.config.server.ts --coverage.enabled=false ;;
+            frontend-tests) npm --workspace apps/web run test -- --run ;;
+            scraper-tests) npm run test:scrapers:unit ;;
+            policy-tests) node --test scripts/__tests__/dependency-evidence.test.mjs && python3 -m unittest discover -s scripts/dependencies -p 'test_ruleset_plan.py' ;;
+            build) npm run build:render ;;
+            *) exit 1 ;;
+          esac
+      - name: Verify dependency declarations did not drift
+        if: ${{ !cancelled() }}
+        run: git diff --exit-code -- package.json package-lock.json 'apps/*/package.json' 'packages/*/package.json'
+      - name: Record exact revisions
+        if: ${{ !cancelled() }}
+        env:
+          REVIEW_BASE: ${{ github.event.pull_request.base.sha }}
+          REVIEW_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+        run: |
+          {
+            printf 'Base: `%s`\n\nHead: `%s`\n\n' "$REVIEW_BASE" "$REVIEW_HEAD"
+            printf 'Tested checkout: `%s`\n\nWorkflow: `%s`\n\n' "$(git rev-parse HEAD)" "$WORKFLOW_SHA"
+            sha256sum package-lock.json
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Record advisory TypeScript result
-        if: ${{ !cancelled() && steps.typecheck.outcome == 'failure' }}
-        run: echo "::warning::TypeScript reported errors (non-blocking; tracked in issue 236)"
+  edge-typecheck:
+    name: Edge typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.19.0'
+          cache: npm
+          cache-dependency-path: cloudflare/package-lock.json
+      - name: Use the canonical npm version
+        run: npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
+      - name: Frozen Cloudflare install
+        working-directory: cloudflare
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Typecheck Cloudflare
+        working-directory: cloudflare
+        run: npm run typecheck
+      - name: Verify edge dependency declarations did not drift
+        if: ${{ !cancelled() }}
+        run: git diff --exit-code -- cloudflare/package.json cloudflare/package-lock.json
 
-      - name: Server tests (correctness only — coverage gate stays informational)
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: npx --no-install vitest run --config vitest.config.server.ts --coverage.enabled=false
-
-      - name: Production build (frontend + server + worker bundle)
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: npm run build:render
+  gate:
+    if: ${{ always() }}
+    needs: [compatibility, edge-typecheck]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every compatibility job
+        env:
+          COMPATIBILITY: ${{ needs.compatibility.result }}
+          EDGE_TYPECHECK: ${{ needs.edge-typecheck.result }}
+        run: |
+          test "$COMPATIBILITY" = success
+          test "$EDGE_TYPECHECK" = success
