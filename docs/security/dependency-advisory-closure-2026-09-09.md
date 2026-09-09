@@ -54,7 +54,7 @@ explicitly provisions Alpine Chromium and validates its executable path during
 image construction; release consumers must install or mount a compatible
 browser. See [browser runtime configuration](../configuration/browser-runtime.md).
 
-## Explicit remaining native exception
+## Native exception at the advisory repair checkpoint
 
 The existing mobile prototype combines Expo 54 with React Native 0.86, while
 Expo 54's `bundledNativeModules.json` specifies React Native 0.81.5 and React
@@ -65,6 +65,12 @@ codegen failure in `VirtualViewExperimentalNativeComponent` (`onModeChange`).
 A coordinated Expo/React Native/React migration and native bundle validation
 belong to a separate behavior change. Web/server/browser success must not be
 reported as native device acceptance.
+
+The separate [native compatibility follow-up](../../apps/mobile/README.md) aligns
+Expo 57, React Native 0.86.3 and React 19.2.3, and adds required local iOS and
+Android JavaScript exports. It raises the native platform floor to iOS 16.4 and
+Xcode 26.4. These bundle checks close the source compatibility exception without
+establishing device execution or signed native release readiness.
 
 npm 11.9 also has upstream workspace-override reporting/update defects. A fresh
 install applies the declared patched resolutions, but `npm ls --all` can report

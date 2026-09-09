@@ -168,9 +168,65 @@ jobs:
             sha256sum package-lock.json
           } >> "$GITHUB_STEP_SUMMARY"
 
+  native-compatibility:
+    name: Native compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      EXPO_OFFLINE: '1'
+      EXPO_NO_TELEMETRY: '1'
+      CI: '1'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.19.0'
+          cache: npm
+      - name: Use the canonical npm version
+        run: npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
+      - name: Frozen workspace install
+        id: install
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify installed native dependency graph
+        run: node scripts/check-mobile-dependencies.mjs
+      - name: Check Expo's bundled dependency recommendations
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm exec --workspace apps/mobile -- expo install --check
+      - name: Typecheck mobile
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm exec --workspace apps/mobile -- tsc --noEmit
+      - name: Export iOS JavaScript bundle locally
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm exec --workspace apps/mobile -- expo export --platform ios --output-dir "$RUNNER_TEMP/mobile-ios" --no-bytecode --max-workers 2
+      - name: Export Android JavaScript bundle locally
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm exec --workspace apps/mobile -- expo export --platform android --output-dir "$RUNNER_TEMP/mobile-android" --no-bytecode --max-workers 2
+      - name: Verify native checks left tracked source unchanged
+        if: ${{ !cancelled() }}
+        run: git diff --exit-code HEAD
+      - name: Record native compatibility revisions
+        if: ${{ !cancelled() }}
+        env:
+          REVIEW_BASE: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
+          REVIEW_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+        run: |
+          {
+            printf 'Base: `%s`\n\n' "$REVIEW_BASE"
+            printf 'Head: `%s`\n\n' "$REVIEW_HEAD"
+            printf 'Tested checkout: `%s`\n\n' "$(git rev-parse HEAD)"
+            printf 'Workflow revision: `%s`\n\n' "$WORKFLOW_SHA"
+            sha256sum package-lock.json
+            echo 'Local JavaScript exports only; no device, EAS, signing or store deployment.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
   gate:
     if: ${{ always() }}
-    needs: [compatibility, edge-typecheck, browser-runtime]
+    needs: [compatibility, edge-typecheck, browser-runtime, native-compatibility]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -179,7 +235,9 @@ jobs:
           COMPATIBILITY: ${{ needs.compatibility.result }}
           EDGE_TYPECHECK: ${{ needs.edge-typecheck.result }}
           BROWSER_RUNTIME: ${{ needs.browser-runtime.result }}
+          NATIVE_COMPATIBILITY: ${{ needs.native-compatibility.result }}
         run: |
           test "$COMPATIBILITY" = success
           test "$EDGE_TYPECHECK" = success
           test "$BROWSER_RUNTIME" = success
+          test "$NATIVE_COMPATIBILITY" = success
