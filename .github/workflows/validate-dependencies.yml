@@ -105,7 +105,7 @@ jobs:
       - name: Record dependency validation evidence
         if: ${{ !cancelled() }}
         env:
-          REVIEW_BASE: ${{ github.event.pull_request.base.sha }}
+          REVIEW_BASE: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
           REVIEW_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
           ROOT_INSTALL: ${{ steps.root_install.outcome }}
           EDGE_INSTALL: ${{ steps.edge_install.outcome }}

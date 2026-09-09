@@ -81,6 +81,13 @@ class RulesetPlanTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             PLAN.desired_settings(source)
 
+    def test_rejects_widened_or_duplicate_branch_scope(self):
+        for includes in (["~DEFAULT_BRANCH", "refs/heads/develop"], ["~ALL"], [], ["~DEFAULT_BRANCH", "~DEFAULT_BRANCH"]):
+            source = snapshot()
+            source["conditions"]["ref_name"]["include"] = includes
+            with self.assertRaisesRegex(ValueError, "scope changed"):
+                PLAN.desired_settings(source)
+
     def test_rejects_conflicting_publisher_and_duplicate_context(self):
         source = snapshot()
         checks = source["rules"][0]["parameters"]["required_status_checks"]

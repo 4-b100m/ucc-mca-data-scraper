@@ -48,6 +48,21 @@ Dependabot checks weekly. Compatible minor and patch version updates are
 grouped; major updates remain individual reviews. Security updates stay outside
 those version groups. Cloudflare participates in the same intake.
 
+Cloudflare validation and deployment use Node 22 to satisfy the locked Wrangler
+runtime requirement. Run `node scripts/verify-cloudflare-toolchain.mjs` after the
+edge install to prove that the installed CLI matches the lock and actually starts.
+Deployments invoke this local binary directly and never install an alternate CLI.
+Staging also records read-only Cloudflare account and UCC resource metadata checks
+using the existing token. These observations never select deployment targets or
+replace required credentials and bindings. Credentials and raw API payloads are
+never printed. Run `python3 scripts/test_diagnose_cloudflare.py` to exercise the
+request and output boundaries offline.
+Staging selects the API-verified account in `cloudflare/wrangler.toml`; it does
+not depend on a GitHub account-ID secret. Production retains its existing manual
+gate and account override. Staging deployment rejects placeholder D1, KV and
+Access bindings before remote mutations. Ordinary dependency PRs exercise the
+guard's offline counterexamples without requiring live resource provisioning.
+
 For each update, `validate-dependencies` must complete both frozen installs and
 leave the declarations unchanged. Its PR-only `Dependency Review` step fails on
 newly introduced high or critical vulnerabilities, including development and

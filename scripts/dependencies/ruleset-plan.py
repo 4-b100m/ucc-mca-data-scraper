@@ -28,7 +28,7 @@ def validate_identity(snapshot):
     if snapshot.get("source_type") != "Repository" or snapshot.get("target") != "branch":
         raise ValueError("Expected a repository branch ruleset")
     ref_name = snapshot.get("conditions", {}).get("ref_name", {})
-    if "~DEFAULT_BRANCH" not in ref_name.get("include", []):
+    if ref_name.get("include") != ["~DEFAULT_BRANCH"]:
         raise ValueError("Default-branch scope changed; re-review the settings plan")
     if ref_name.get("exclude"):
         raise ValueError("Branch exclusions require a policy review before activation")

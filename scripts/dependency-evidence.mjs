@@ -58,14 +58,23 @@ export function graphDelta(base, head, lockfile) {
   return result
 }
 
-export function validateManifestLock(manifest, lock, lockfile) {
+export function manifestPackagePaths(lock) {
+  return Object.keys(lock.packages ?? {}).filter((path) => {
+    if (path.includes('node_modules/')) return false
+    if (path.startsWith('/') || path.includes('\\') || path.split('/').includes('..'))
+      throw new Error('Workspace path must remain repository-relative')
+    return true
+  })
+}
+
+export function validateManifestLock(manifest, lock, lockfile, packagePath = '') {
   for (const field of [
     'dependencies',
     'devDependencies',
     'optionalDependencies',
     'peerDependencies'
   ]) {
-    if (!equal(manifest[field] ?? {}, lock.packages?.['']?.[field] ?? {}))
+    if (!equal(manifest[field] ?? {}, lock.packages?.[packagePath]?.[field] ?? {}))
       throw new Error(`${lockfile}: manifest and lock root disagree on ${field}`)
   }
 }
@@ -146,6 +155,7 @@ export function advisoryDelta(base, head) {
 export function routeExceptions(graph, advisories, files, allowedFiles, sensitive = []) {
   const exceptions = []
   if (advisories.status !== 'complete') exceptions.push('advisory-evidence-unavailable')
+  if (advisories.head.length) exceptions.push('advisories-remain')
   if (advisories.head.some((entry) => ['high', 'critical'].includes(entry.severity)))
     exceptions.push('high-or-critical-advisories-remain')
   if (advisories.introduced.length) exceptions.push('new-advisories')
@@ -156,11 +166,23 @@ export function routeExceptions(graph, advisories, files, allowedFiles, sensitiv
   if (
     !graph.added.length &&
     !graph.removed.length &&
-    !graph.changed.some((change) => change.path !== '')
+    !graph.changed.some((change) => change.path.includes('node_modules/'))
   )
     exceptions.push('no-dependency-graph-change')
   for (const change of graph.changed) {
-    if (change.path === '') {
+    if (!change.path.includes('node_modules/')) {
+      if (
+        change.fields.some(
+          (field) =>
+            ![
+              'dependencies',
+              'devDependencies',
+              'optionalDependencies',
+              'peerDependencies'
+            ].includes(field)
+        )
+      )
+        exceptions.push(`workspace-or-root-lock-metadata:${change.path}`)
       for (const field of [
         'dependencies',
         'devDependencies',
@@ -253,7 +275,7 @@ function auditAt(revision, lockfile, outputDir, label) {
     for (const file of [lockfile, join(dirname(lockfile), 'package.json')])
       writeFileSync(
         join(directory, basename(file)),
-        execFileSync('git', ['show', `${revision}:${file}`])
+        execFileSync('git', ['show', `${revision}:${file}`], { maxBuffer: 32 * 1024 * 1024 })
       )
     const result = spawnSync(
       'npm',
@@ -302,6 +324,7 @@ export function collect(args) {
     base_sha: config.base,
     head_sha: config.head,
     tested_sha: config.tested,
+    dependency_revision_sha: config.tested,
     workflow_sha: process.env.GITHUB_WORKFLOW_SHA ?? '',
     workflow_path: process.env.DEPENDENCY_WORKFLOW_PATH ?? '.github/workflows/ci.yml',
     run_id: process.env.GITHUB_RUN_ID ?? '',
@@ -322,6 +345,7 @@ export function collect(args) {
     exceptions: [],
     route: 'exception'
   }
+  const allowed = []
   for (const lock of locks) {
     if (
       lock.startsWith('/') ||
@@ -329,31 +353,48 @@ export function collect(args) {
       basename(lock) !== 'package-lock.json'
     )
       throw new Error('Lock path must be a repository-relative package-lock.json')
-    const current = execFileSync('git', ['show', `${config.tested}:${lock}`])
+    const current = execFileSync('git', ['show', `${config.tested}:${lock}`], {
+      maxBuffer: 32 * 1024 * 1024
+    })
     if (sha256(readFileSync(lock)) !== sha256(current))
       throw new Error(`${lock}: checkout changed after tested revision`)
     evidence.lockfile_sha256[lock] = sha256(current)
-    const manifestPath = join(dirname(lock), 'package.json')
-    const manifestBefore = JSON.parse(git('show', `${config.base}:${manifestPath}`))
-    const manifestAfter = JSON.parse(git('show', `${config.tested}:${manifestPath}`))
-    validateManifestLock(manifestAfter, JSON.parse(current), lock)
-    if (!equal(JSON.parse(readFileSync(manifestPath, 'utf8')), manifestAfter))
-      throw new Error(`${manifestPath}: manifest changed after tested revision`)
-    const dependencyFields = ['dependencies', 'devDependencies', 'optionalDependencies']
-    const behavior = (manifest) =>
-      Object.fromEntries(
-        Object.entries(manifest).filter(([key]) => !dependencyFields.includes(key))
-      )
-    if (!equal(behavior(manifestBefore), behavior(manifestAfter)))
-      evidence.exceptions.push(`manifest-behavior-change:${manifestPath}`)
-    for (const field of dependencyFields) {
-      if (
-        !equal(
-          Object.keys(manifestBefore[field] ?? {}).sort(),
-          Object.keys(manifestAfter[field] ?? {}).sort()
+    const baseLock = JSON.parse(git('show', `${config.base}:${lock}`))
+    const testedLock = JSON.parse(current)
+    allowed.push(lock)
+    for (const packagePath of manifestPackagePaths(testedLock)) {
+      const manifestPath = join(dirname(lock), packagePath, 'package.json')
+      allowed.push(manifestPath)
+      const manifestAfter = JSON.parse(git('show', `${config.tested}:${manifestPath}`))
+      validateManifestLock(manifestAfter, testedLock, lock, packagePath)
+      if (!equal(JSON.parse(readFileSync(manifestPath, 'utf8')), manifestAfter))
+        throw new Error(`${manifestPath}: manifest changed after tested revision`)
+      if (!Object.hasOwn(baseLock.packages, packagePath)) {
+        evidence.exceptions.push(`workspace-added:${manifestPath}`)
+        continue
+      }
+      const manifestBefore = JSON.parse(git('show', `${config.base}:${manifestPath}`))
+      const dependencyFields = [
+        'dependencies',
+        'devDependencies',
+        'optionalDependencies',
+        'peerDependencies'
+      ]
+      const behavior = (manifest) =>
+        Object.fromEntries(
+          Object.entries(manifest).filter(([key]) => !dependencyFields.includes(key))
         )
-      )
-        evidence.exceptions.push(`direct-dependency-additions-or-removals:${manifestPath}`)
+      if (!equal(behavior(manifestBefore), behavior(manifestAfter)))
+        evidence.exceptions.push(`manifest-behavior-change:${manifestPath}`)
+      for (const field of dependencyFields) {
+        if (
+          !equal(
+            Object.keys(manifestBefore[field] ?? {}).sort(),
+            Object.keys(manifestAfter[field] ?? {}).sort()
+          )
+        )
+          evidence.exceptions.push(`direct-dependency-additions-or-removals:${manifestPath}`)
+      }
     }
     const delta = graphDelta(
       JSON.parse(git('show', `${config.base}:${lock}`)),
@@ -379,8 +420,11 @@ export function collect(args) {
       evidence.advisories,
       advisoryDelta(evidence.advisories.base, evidence.advisories.head)
     )
-  const files = git('diff', '--name-only', config.base, config.head).split('\n').filter(Boolean)
-  const allowed = locks.flatMap((lock) => [lock, join(dirname(lock), 'package.json')])
+  // Graph, declarations, advisories and file scope all describe the tested merge tree.
+  // head_sha separately identifies the PR source revision; it is not the dependency snapshot.
+  const files = git('diff', '--name-only', '-z', config.base, config.tested)
+    .split('\0')
+    .filter(Boolean)
   evidence.exceptions.push(
     ...routeExceptions(evidence.graph, evidence.advisories, files, allowed, config.sensitive)
   )

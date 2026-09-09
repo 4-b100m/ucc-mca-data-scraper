@@ -38,6 +38,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
@@ -50,15 +53,16 @@ jobs:
       - name: Run independent compatibility check
         env:
           CHECK: ${{ matrix.check }}
+          REVIEW_BASE: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
         run: |
           case "$CHECK" in
-            format) ./node_modules/.bin/prettier --check package.json cloudflare/package.json .github/dependabot.yml .github/workflows/ci-gate.yml .github/workflows/validate-dependencies.yml scripts/dependency-evidence.mjs ;;
+            format) node scripts/check-format.mjs "$REVIEW_BASE" ;;
             lint) npm run lint ;;
             typecheck) npm run typecheck ;;
             server-tests) ./node_modules/.bin/vitest run --config vitest.config.server.ts --coverage.enabled=false ;;
             frontend-tests) npm --workspace apps/web run test -- --run ;;
             scraper-tests) npm run test:scrapers:unit ;;
-            policy-tests) node --test scripts/__tests__/dependency-evidence.test.mjs && python3 -m unittest discover -s scripts/dependencies -p 'test_ruleset_plan.py' ;;
+            policy-tests) node --test scripts/__tests__/dependency-evidence.test.mjs scripts/__tests__/check-format.test.mjs && python3 -m unittest discover -s scripts/dependencies -p 'test_ruleset_plan.py' ;;
             build) npm run build:render ;;
             *) exit 1 ;;
           esac
@@ -68,7 +72,7 @@ jobs:
       - name: Record exact revisions
         if: ${{ !cancelled() }}
         env:
-          REVIEW_BASE: ${{ github.event.pull_request.base.sha }}
+          REVIEW_BASE: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
           REVIEW_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
           WORKFLOW_SHA: ${{ github.workflow_sha }}
         run: |
@@ -85,6 +89,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
@@ -96,6 +103,18 @@ jobs:
       - name: Frozen Cloudflare install
         working-directory: cloudflare
         run: npm ci --ignore-scripts --no-audit --no-fund
+      # Candidate dependencies execute only in this isolated compatibility job.
+      # Keep the graph/advisory evidence job free from candidate CLI execution.
+      - name: Verify locked Cloudflare CLI starts
+        run: node scripts/verify-cloudflare-toolchain.mjs
+      - name: Verify Cloudflare diagnostic boundaries without credentials
+        if: ${{ !cancelled() }}
+        run: python3 scripts/test_diagnose_cloudflare.py
+      - name: Verify staging account resolution and binding counterexamples
+        if: ${{ !cancelled() }}
+        run: |
+          node scripts/verify-cloudflare-account.mjs
+          python3 scripts/test_verify_cloudflare_staging.py
       - name: Typecheck Cloudflare
         working-directory: cloudflare
         run: npm run typecheck
