@@ -1,8 +1,9 @@
 # ucc-mca-edge — Cloudflare edge foundation
 
 The strangler-pattern base for migrating this platform (Express + BullMQ + Redis
-+ Postgres + Vite SPA) to an all-Cloudflare, $0-floor, edge-native architecture.
-The ideal-form target is in [`../docs/logos/telos.md`](../docs/logos/telos.md).
+
+- Postgres + Vite SPA) to an all-Cloudflare, $0-floor, edge-native architecture.
+  The ideal-form target is in [`../docs/logos/telos.md`](../docs/logos/telos.md).
 
 Everything here is **self-contained** under `cloudflare/` (plus one GitHub
 Actions workflow). It does not touch the root `package.json`, `server/`,
@@ -108,3 +109,19 @@ push to `main` → auto-deploy **staging**; `workflow_dispatch` with `confirm=DE
   banner in `src/db.ts`. No org-scope, no ship.
 - **Fail closed.** Missing/invalid Access JWT → 401; org mismatch → 403; the
   error handler never leaks internals.
+
+## Dependency security baseline (2026-09-09)
+
+Use Node 24.19.0 and npm 11.9.0 with `npm ci`. Wrangler 4.130.0 requires
+Workers types 5.20260908.1; the type-only major update was checked with the
+Worker's strict TypeScript configuration. Wrangler also explicitly resolves
+Miniflare `5.20260908.0-alpha`; this transitive major/prerelease is a reviewed
+security exception, not a routine compatible update. `node
+scripts/test-cloudflare-runtime.mjs` bundles the actual Worker and checks
+local health/authentication/404 behavior, with telemetry and outbound fetches
+disabled. Hono's 4.13 series closes the current
+request-parser advisories. The narrowly scoped `miniflare` → `sharp` 0.35.4
+override closes [GHSA-rgj7-g3m4-5g8c](https://github.com/advisories/GHSA-rgj7-g3m4-5g8c)
+until Miniflare raises its own pin; remove it when the upstream resolved graph
+stays patched without it. `npm audit --json` reports zero vulnerabilities for
+this lockfile after a frozen install. Deployment is a separate operation.
