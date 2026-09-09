@@ -36,7 +36,10 @@ class StagingTests(unittest.TestCase):
 
     def test_shared_production_resources_are_rejected(self):
         config = self.fixture()
+        config["env"]["staging"]["d1_databases"][0]["database_id"] = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
         config["env"]["production"] = deepcopy(config["env"]["staging"])
+        config["env"]["production"]["d1_databases"][0]["database_id"] = "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA"
+        config["env"]["production"]["kv_namespaces"][0]["id"] = "A" * 32
         errors = staging.validate_staging(config)
         self.assertTrue(any("DB must be distinct" in error for error in errors))
         self.assertTrue(any("KV must be distinct" in error for error in errors))

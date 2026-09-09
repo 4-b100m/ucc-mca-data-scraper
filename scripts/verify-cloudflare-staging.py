@@ -32,9 +32,15 @@ def validate_staging(config):
         errors.append("staging DB database_id must be a provisioned, nonzero UUID")
     if not isinstance(namespace, str) or not re.fullmatch(r"[0-9a-fA-F]{32}", namespace) or not namespace.strip("0"):
         errors.append("staging KV id must be a provisioned, nonzero namespace ID")
-    if valid_database and database == binding(production, "d1_databases", "database_id"):
+    production_database = binding(production, "d1_databases", "database_id")
+    production_namespace = binding(production, "kv_namespaces", "id")
+    try:
+        shared_database = valid_database and uuid.UUID(database) == uuid.UUID(production_database)
+    except (ValueError, AttributeError, TypeError):
+        shared_database = False
+    if shared_database:
         errors.append("staging DB must be distinct from production DB")
-    if namespace and namespace == binding(production, "kv_namespaces", "id"):
+    if isinstance(namespace, str) and namespace and isinstance(production_namespace, str) and namespace.lower() == production_namespace.lower():
         errors.append("staging KV must be distinct from production KV")
 
     variables = staging.get("vars", {})
