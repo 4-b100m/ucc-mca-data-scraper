@@ -37,12 +37,22 @@ Vitest, server Vitest, scraper Vitest, and `npm run build:render`. A formatting
 failure must not prevent any compatibility job from running.
 
 `scripts/test-browser-runtime.mjs` verifies both plain Puppeteer and the existing
-puppeteer-extra/stealth launcher against an already installed Chromium. It tests
+puppeteer-extra/stealth launcher and Playwright against an already installed Chromium. It tests
 CommonJS loading, the asynchronous default-arguments boundary, launch, DOM access,
 page closing and browser cleanup. It downloads nothing, visits a data URL only,
-and requires `CHROMIUM_EXECUTABLE_PATH` explicitly. The local validation used
+and requires `PUPPETEER_EXECUTABLE_PATH` (or `CHROMIUM_EXECUTABLE_PATH`) explicitly. The local validation used
 registry-packaged Chromium 152.0.7977.0 with Node 24.19.0; it does not establish
-compatibility with every browser release or a live government portal.
+compatibility with every browser release or a live government portal. The dedicated
+required `Browser runtime` CI job provisions the exact npm-locked Chromium
+152.0.0 fixture from its bundled compressed executable and repeats all three
+launcher probes independently from formatting and advisory evidence.
+
+Node 24 supports `require(ESM)` and Puppeteer 25 exposes a `require` package
+export; the cold CommonJS probe tests that supported boundary directly. Its
+public `Browser.connected` getter is checked after cleanup. The Docker runner
+explicitly provisions Alpine Chromium and validates its executable path during
+image construction; release consumers must install or mount a compatible
+browser. See [browser runtime configuration](../configuration/browser-runtime.md).
 
 ## Explicit remaining native exception
 

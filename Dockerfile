@@ -43,6 +43,10 @@ RUN npm run build:render
 FROM node-base AS runner
 WORKDIR /app
 
+# Browser provisioning is explicit; npm lifecycle downloads stay disabled.
+RUN apk add --no-cache chromium && test -x /usr/bin/chromium
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
 # Security: Run as non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 appuser

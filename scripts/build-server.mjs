@@ -71,7 +71,6 @@ const sharedOptions = {
     'playwright',
     'playwright-core',
     'sharp',
-    'fsevents',
     'jsonwebtoken',
     'express',
     'compression',

@@ -93,6 +93,31 @@ describe('BasePuppeteerScraper', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.unstubAllEnvs()
+  })
+
+  it('refuses an unconfigured production browser before launch', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('PUPPETEER_EXECUTABLE_PATH', undefined)
+    vi.stubEnv('CHROMIUM_EXECUTABLE_PATH', undefined)
+    await expect(
+      new TestScraper().runSearch({
+        success: true,
+        timestamp: new Date().toISOString()
+      })
+    ).rejects.toThrow(/PUPPETEER_EXECUTABLE_PATH/)
+    expect(puppeteerMock.launch).not.toHaveBeenCalled()
+  })
+
+  it('passes the configured executable to the plain Puppeteer launcher', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('PUPPETEER_EXECUTABLE_PATH', process.execPath)
+    vi.stubEnv('CHROMIUM_EXECUTABLE_PATH', undefined)
+    puppeteerMock.launch.mockResolvedValue(createMockBrowser(createMockPage()))
+    await new TestScraper().runSearch({ success: true, timestamp: new Date().toISOString() })
+    expect(puppeteerMock.launch).toHaveBeenCalledWith(
+      expect.objectContaining({ executablePath: process.execPath })
+    )
   })
 
   it('initializes page settings before running a page workflow', async () => {

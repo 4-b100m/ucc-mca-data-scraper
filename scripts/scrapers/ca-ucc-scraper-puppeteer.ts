@@ -11,6 +11,7 @@
  */
 
 import type { Browser, Page } from 'puppeteer'
+import { resolveBrowserExecutablePath } from '../../server/utils/browser-executable'
 import { BaseScraper, ScraperConfig, ScraperResult, UCCFiling } from './base-scraper'
 
 import puppeteerExtra from 'puppeteer-extra'
@@ -46,6 +47,7 @@ export class CaliforniaUCCScraperPuppeteer extends BaseScraper {
     // Assign through a local so the non-null type survives the await —
     // TS resets property narrowing across await boundaries.
     const browser = await puppeteerExtra.launch({
+      executablePath: resolveBrowserExecutablePath(),
       headless: true,
       args: [
         '--no-sandbox',
@@ -88,6 +90,8 @@ export class CaliforniaUCCScraperPuppeteer extends BaseScraper {
     this.log('info', 'Starting CA UCC search (Puppeteer)', { companyName })
 
     try {
+      // Configuration errors cannot be repaired by retrying a remote portal.
+      resolveBrowserExecutablePath()
       const { result: filings, retryCount } = await this.retryWithBackoff(
         () => this.executeSearch(companyName),
         `CA UCC search for "${companyName}"`
