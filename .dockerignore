@@ -1,0 +1,15 @@
+# The image must use only the frozen dependency trees built inside its stages.
+**/node_modules
+**/.git
+**/dist
+**/coverage
+**/playwright-report
+**/test-results
+**/.expo
+**/.cache
+**/npm-debug.log*
+
+# Local credentials/configuration never belong in the build context.
+**/.env
+**/.env.*
+!**/.env.example

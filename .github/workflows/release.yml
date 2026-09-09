@@ -11,7 +11,9 @@
 # The attached `ucc-mca-platform-<tag>.tar.gz` unpacks to a directory that runs
 # with only production deps:
 #   tar -xzf ucc-mca-platform-v1.2.3.tar.gz && cd package
-#   npm ci --omit=dev && node dist/server.cjs
+#   # Use Node 24.19.0 and npm 11.9.0; install or mount Chromium first.
+#   export NODE_ENV=production PUPPETEER_EXECUTABLE_PATH=/absolute/path/to/chromium
+#   npm ci --omit=dev --ignore-scripts && node dist/server.cjs
 # ============================================================================
 name: Release
 
@@ -42,8 +44,11 @@ jobs:
         # actions/setup-node v4.4.0
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
-          node-version: 20.x
+          node-version: '24.19.0'
           cache: npm
+
+      - name: Use the canonical npm version
+        run: npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
@@ -65,17 +70,31 @@ jobs:
           cp -r dist "$STAGE/dist"
           cp -r database "$STAGE/database"
           cp package.json package-lock.json "$STAGE/"
+          for manifest in apps/*/package.json packages/*/package.json; do
+            mkdir -p "$STAGE/$(dirname "$manifest")"
+            cp "$manifest" "$STAGE/$manifest"
+          done
           cp scripts/migrate.ts "$STAGE/scripts/" 2>/dev/null || true
           cp scripts/ensure-main-branch.mjs "$STAGE/scripts/" 2>/dev/null || true
           cat > "$STAGE/RUN.md" <<'EOF'
           # Running this release
 
           ```bash
-          npm ci --omit=dev        # install production dependencies
+          npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
+          npm ci --omit=dev --ignore-scripts  # install the frozen production graph
+          export NODE_ENV=production
+          export PUPPETEER_EXECUTABLE_PATH=/absolute/path/to/installed/chromium
           npm run db:migrate       # apply database migrations (needs DATABASE_URL)
           node dist/server.cjs     # start the API server (port 3000)
           node dist/worker.cjs     # start the background worker (separate process)
           ```
+
+          Use Node 24.19.0. Install Chromium through the host OS or mount a
+          compatible Chromium executable and its system libraries before browser
+          scraping. Set PUPPETEER_EXECUTABLE_PATH (CHROMIUM_EXECUTABLE_PATH is an
+          accepted alias). The release does not bundle/download Chromium during
+          npm installation; production browser launch refuses missing or invalid
+          configuration. The Docker image provisions Alpine Chromium explicitly.
 
           Smoke test once the server is up:
 

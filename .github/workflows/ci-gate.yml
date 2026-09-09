@@ -129,9 +129,53 @@ jobs:
         if: ${{ !cancelled() }}
         run: git diff --exit-code -- cloudflare/package.json cloudflare/package-lock.json
 
+  browser-runtime:
+    name: Browser runtime
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.19.0'
+          cache: npm
+      - name: Use the canonical npm version
+        run: npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
+      - name: Frozen workspace install
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      # The browser is a pinned dev fixture in the root lock. Candidate code and
+      # browser execution stay in this compatibility job, away from evidence.
+      - name: Provision the locked offline Chromium fixture
+        id: browser
+        run: node scripts/provision-browser-runtime.mjs >> "$GITHUB_OUTPUT"
+      - name: Verify all production browser SDK boundaries offline
+        env:
+          NODE_ENV: production
+          PUPPETEER_EXECUTABLE_PATH: ${{ steps.browser.outputs.executable_path }}
+        run: node scripts/test-browser-runtime.mjs
+      - name: Verify tracked source did not drift
+        if: ${{ !cancelled() }}
+        run: git diff --exit-code HEAD
+      - name: Record exact tested revision
+        if: ${{ !cancelled() }}
+        env:
+          REVIEW_BASE: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
+          REVIEW_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+        run: |
+          {
+            printf 'Base: `%s`\n\nHead: `%s`\n\n' "$REVIEW_BASE" "$REVIEW_HEAD"
+            printf 'Tested checkout: `%s`\n\nWorkflow: `%s`\n\n' "$(git rev-parse HEAD)" "$WORKFLOW_SHA"
+            sha256sum package-lock.json
+          } >> "$GITHUB_STEP_SUMMARY"
+
   gate:
     if: ${{ always() }}
-    needs: [compatibility, edge-typecheck]
+    needs: [compatibility, edge-typecheck, browser-runtime]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -139,6 +183,8 @@ jobs:
         env:
           COMPATIBILITY: ${{ needs.compatibility.result }}
           EDGE_TYPECHECK: ${{ needs.edge-typecheck.result }}
+          BROWSER_RUNTIME: ${{ needs.browser-runtime.result }}
         run: |
           test "$COMPATIBILITY" = success
           test "$EDGE_TYPECHECK" = success
+          test "$BROWSER_RUNTIME" = success

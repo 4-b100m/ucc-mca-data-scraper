@@ -23,7 +23,10 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24.19.0'
+      - name: Use the canonical npm version
+        run: npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
+
       - name: Install dependencies
         run: npm ci
       - name: Install Tauri system dependencies
