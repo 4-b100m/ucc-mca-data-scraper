@@ -111,6 +111,28 @@ class DiagnosticTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             diag.request_json("/accounts/other-account/workers/scripts", TOKEN)
 
+    def test_malformed_credentials_and_transport_exceptions_are_redacted(self):
+        for token in [TOKEN + "\nBAD", TOKEN + "\u2603"]:
+            code, report, text, calls = self.execute(
+                {"CLOUDFLARE_API_TOKEN": token}, lambda _: self.fail("unexpected request"))
+            self.assertEqual(code, 1)
+            self.assertEqual(calls, [])
+            self.assertNotIn(TOKEN, text)
+            self.assertTrue(all(c["invalid_credential_format"] for c in report["checks"].values()))
+
+        def fail_open(_):
+            raise ValueError("Authorization: Bearer " + TOKEN)
+
+        class FailRead(Response):
+            def read(self, *_):
+                raise RuntimeError("Raw server text " + TOKEN)
+
+        for responder in [fail_open, lambda _: FailRead({})]:
+            code, report, text, calls = self.execute({"CLOUDFLARE_API_TOKEN": TOKEN}, responder)
+            self.assertEqual(code, 1)
+            self.assertNotIn(TOKEN, text)
+            self.assertTrue(all(c["transport_error"] for c in report["checks"].values()))
+
     def test_malformed_success_does_not_establish_account_access(self):
         code, report, text, calls = self.execute(
             {"CLOUDFLARE_API_TOKEN": TOKEN},

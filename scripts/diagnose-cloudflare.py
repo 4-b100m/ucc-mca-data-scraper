@@ -25,20 +25,25 @@ def request_json(path, token):
     if not (path == "/user/tokens/verify" or path == f"/accounts/{ACCOUNT}"
             or path.startswith(f"/accounts/{ACCOUNT}/")):
         raise ValueError("Endpoint outside diagnostic scope")
-    request = urllib.request.Request(
-        ORIGIN + path, method="GET",
-        headers={"Authorization": "Bearer " + token, "Accept": "application/json"},
-    )
-    opener = urllib.request.build_opener(NoRedirect())
+    if not token or any(ord(char) < 33 or ord(char) > 126 for char in token):
+        return {"success": False, "invalid_credential_format": True}, {}
     try:
-        response = opener.open(request, timeout=20)
-    except urllib.error.HTTPError as exc:
-        response = exc
-    except (urllib.error.URLError, TimeoutError, OSError):
+        request = urllib.request.Request(
+            ORIGIN + path, method="GET",
+            headers={"Authorization": "Bearer " + token, "Accept": "application/json"},
+        )
+        opener = urllib.request.build_opener(NoRedirect())
+        try:
+            response = opener.open(request, timeout=20)
+        except urllib.error.HTTPError as exc:
+            response = exc
+        with response:
+            raw = response.read(MAX_BYTES + 1)
+            status = response.code
+    except Exception:
+        # Header, protocol and read exceptions can contain raw credential/payload
+        # text. Never propagate or stringify them from this narrow transport scope.
         return {"success": False, "transport_error": True}, {}
-    with response:
-        raw = response.read(MAX_BYTES + 1)
-        status = response.code
     receipt = {"http_status": status, "success": False}
     if len(raw) > MAX_BYTES:
         return {**receipt, "response_too_large": True}, {}
