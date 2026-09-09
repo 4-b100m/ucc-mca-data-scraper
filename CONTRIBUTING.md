@@ -54,6 +54,11 @@ using the existing token. These observations never select deployment targets or
 replace required credentials and bindings. Credentials and raw API payloads are
 never printed. Run `python3 scripts/test_diagnose_cloudflare.py` to exercise the
 request and output boundaries offline.
+Staging selects the API-verified account in `cloudflare/wrangler.toml`; it does
+not depend on a GitHub account-ID secret. Production retains its existing manual
+gate and account override. Staging deployment rejects placeholder D1, KV and
+Access bindings before remote mutations. Ordinary dependency PRs exercise the
+guard's offline counterexamples without requiring live resource provisioning.
 
 For each update, `validate-dependencies` must complete both frozen installs and
 leave the declarations unchanged. Its PR-only `Dependency Review` step fails on

@@ -79,8 +79,8 @@ def main():
     report = {
         "candidate_account_id": ACCOUNT,
         "api_token_present": bool(token),
-        "account_secret_present": bool(configured_account),
-        "account_secret_matches_documented_candidate": configured_account == ACCOUNT if configured_account else None,
+        "account_override_present": bool(configured_account),
+        "account_override_matches_documented_candidate": configured_account == ACCOUNT if configured_account else None,
         "cloudflare_writes": False,
         "deployment_verified": False,
         "checks": {},
