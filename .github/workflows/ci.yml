@@ -34,13 +34,17 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
+        id: install
         run: npm ci --ignore-scripts
 
       - name: Lint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run lint
 
       - name: Test
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm test
 
       - name: Build
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run build

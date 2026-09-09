@@ -22,7 +22,7 @@ Thank you for your interest in contributing to the UCC-MCA Intelligence Platform
 2. Install dependencies:
 
    ```bash
-   npm install
+   npm ci
    ```
 
 3. Start the development server:
@@ -31,6 +31,33 @@ Thank you for your interest in contributing to the UCC-MCA Intelligence Platform
    ```
 
 ## Development Workflow
+
+### Dependency maintenance
+
+Use npm from the repository root for all `apps/*` and `packages/*` workspaces.
+The root `package-lock.json` is their authoritative dependency graph;
+`cloudflare/package-lock.json` independently locks the edge application.
+Do not create additional pnpm, Yarn, or workspace-local lockfiles. Use
+`npm install <package>` (with `--workspace <path>` when appropriate) only when
+intentionally updating a dependency, and commit the affected manifests and lock.
+
+Dependabot checks weekly. Compatible minor and patch version updates are
+grouped; major updates remain individual reviews. Security updates stay outside
+those version groups. Cloudflare participates in the same intake.
+
+For each update, `validate-dependencies` must complete both frozen installs and
+leave the declarations unchanged. `Dependency review` fails on newly introduced
+high or critical vulnerabilities, including development and unknown scopes.
+It evaluates the changed dependency graph; unchanged vulnerabilities still need
+their own repairs and a passing delta check is not a clean-bill-of-health audit.
+Use the workflow's tested checkout, PR head and lock hashes when reviewing results.
+
+The frontend CI and CI Gate report independent lint, test and build failures
+after installation succeeds. TypeScript diagnostics remain advisory under #236;
+backend coverage and opt-in desktop/mobile execution are not acceptance claims.
+Checks running on a candidate branch are not proof of trusted workflow identity.
+Required-check configuration, review and merge authority remain separate gates;
+this pilot does not enable automatic approval or merging.
 
 ### Running the Application
 

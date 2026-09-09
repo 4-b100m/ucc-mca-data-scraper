@@ -47,7 +47,7 @@ jobs:
 
       - name: Install edge deps
         working-directory: cloudflare
-        run: npm ci --ignore-scripts || npm install --ignore-scripts
+        run: npm ci --ignore-scripts
 
       # Apply D1 migrations to the REMOTE staging DB BEFORE deploying the Worker,
       # so the new code never goes live against an unmigrated/stale schema.
@@ -94,7 +94,7 @@ jobs:
 
       - name: Install edge deps
         working-directory: cloudflare
-        run: npm ci --ignore-scripts || npm install --ignore-scripts
+        run: npm ci --ignore-scripts
 
       - name: Apply D1 migrations (production)
         uses: cloudflare/wrangler-action@v4
