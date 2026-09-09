@@ -4,9 +4,20 @@ import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const edge = new URL('../cloudflare/', import.meta.url)
-const readJson = (path) => JSON.parse(readFileSync(new URL(path, edge), 'utf8'))
-const locked = readJson('package-lock.json').packages['node_modules/wrangler'].version
-const installed = readJson('node_modules/wrangler/package.json').version
+const readJson = (path) => {
+  try {
+    return JSON.parse(readFileSync(new URL(path, edge), 'utf8'))
+  } catch {
+    assert.fail(`Expected a readable JSON file at cloudflare/${path}`)
+  }
+}
+const locked = readJson('package-lock.json')?.packages?.['node_modules/wrangler']?.version
+const installed = readJson('node_modules/wrangler/package.json')?.version
+assert.ok(
+  typeof locked === 'string' && locked,
+  'Authoritative lock must contain a Wrangler version'
+)
+assert.ok(typeof installed === 'string' && installed, 'Installed Wrangler must declare a version')
 assert.equal(installed, locked, 'Installed Wrangler must match the authoritative lock')
 
 const result = spawnSync(

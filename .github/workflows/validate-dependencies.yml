@@ -57,6 +57,10 @@ jobs:
         if: ${{ !cancelled() && steps.edge_install.outcome == 'success' }}
         run: node scripts/verify-cloudflare-toolchain.mjs
 
+      - name: Verify Cloudflare diagnostic boundaries without credentials
+        if: ${{ !cancelled() }}
+        run: python3 scripts/test_diagnose_cloudflare.py
+
       - name: Confirm installs left dependency declarations unchanged
         if: ${{ !cancelled() }}
         run: git diff --exit-code -- package.json package-lock.json 'apps/*/package.json' 'packages/*/package.json' cloudflare/package.json cloudflare/package-lock.json

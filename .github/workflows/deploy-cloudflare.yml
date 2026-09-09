@@ -57,6 +57,14 @@ jobs:
       - name: Confirm frozen dependency declarations
         run: git diff --exit-code -- cloudflare/package.json cloudflare/package-lock.json
 
+      - name: Diagnose staging account access without changing resources
+        # Diagnostic observations do not replace required deployment configuration.
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: python3 scripts/diagnose-cloudflare.py
+
       - name: Apply D1 migrations (staging)
         working-directory: cloudflare
         env:
@@ -72,7 +80,10 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: ./node_modules/.bin/wrangler deploy --env staging
+        run: |
+          : "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN is not configured}"
+          : "${CLOUDFLARE_ACCOUNT_ID:?CLOUDFLARE_ACCOUNT_ID is not configured}"
+          ./node_modules/.bin/wrangler deploy --env staging
 
       # --- How the SPA (apps/web) Pages deploy would attach (left commented;
       #     this workflow stays scoped to the Worker for now) -----------------
@@ -122,4 +133,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: ./node_modules/.bin/wrangler deploy --env production
+        run: |
+          : "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN is not configured}"
+          : "${CLOUDFLARE_ACCOUNT_ID:?CLOUDFLARE_ACCOUNT_ID is not configured}"
+          ./node_modules/.bin/wrangler deploy --env production
