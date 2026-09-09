@@ -19,7 +19,9 @@ def validate_staging(config):
     def binding(env, collection, field):
         rows = env.get(collection, [])
         target = "DB" if collection == "d1_databases" else "KV"
-        matches = [row for row in rows if row.get("binding") == target]
+        if not isinstance(rows, list):
+            return ""
+        matches = [row for row in rows if isinstance(row, dict) and row.get("binding") == target]
         return matches[0].get(field, "") if len(matches) == 1 else ""
 
     database = binding(staging, "d1_databases", "database_id")

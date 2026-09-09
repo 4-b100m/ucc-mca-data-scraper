@@ -54,6 +54,14 @@ class StagingTests(unittest.TestCase):
         for field in ["account_id", "DB database_id", "KV id"]:
             self.assertTrue(any(field in error for error in errors))
 
+    def test_malformed_binding_tables_return_structured_errors(self):
+        config = self.fixture()
+        config["env"]["staging"]["d1_databases"] = {"binding": "DB"}
+        config["env"]["staging"]["kv_namespaces"] = ["not-a-table"]
+        errors = staging.validate_staging(config)
+        self.assertTrue(any("DB database_id" in error for error in errors))
+        self.assertTrue(any("KV id" in error for error in errors))
+
 
 if __name__ == "__main__":
     unittest.main()
