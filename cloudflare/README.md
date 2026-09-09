@@ -1,9 +1,7 @@
 # ucc-mca-edge — Cloudflare edge foundation
 
-The strangler-pattern base for migrating this platform (Express + BullMQ + Redis
-
-- Postgres + Vite SPA) to an all-Cloudflare, $0-floor, edge-native architecture.
-  The ideal-form target is in [`../docs/logos/telos.md`](../docs/logos/telos.md).
+The strangler-pattern base for migrating this platform (Express + BullMQ + Redis + Postgres + Vite SPA) to an all-Cloudflare, $0-floor, edge-native architecture.
+The ideal-form target is in [`../docs/logos/telos.md`](../docs/logos/telos.md).
 
 Everything here is **self-contained** under `cloudflare/` (plus one GitHub
 Actions workflow). It does not touch the root `package.json`, `server/`,
