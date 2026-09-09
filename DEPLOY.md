@@ -18,10 +18,10 @@
 
 ### Backend Bundles (`dist/`)
 
-- **`dist/server.cjs`** — Express.js API server (esbuild-bundled, Node 20+)
+- **`dist/server.cjs`** — Express.js API server (esbuild-bundled, Node 24.19.0)
   - Handles: REST endpoints, authentication, BullMQ queue integration, webhooks
   - Size: ~5-8 MB (varies by optimization)
-- **`dist/worker.cjs`** — BullMQ queue worker (esbuild-bundled, Node 20+)
+- **`dist/worker.cjs`** — BullMQ queue worker (esbuild-bundled, Node 24.19.0)
   - Handles: UCC ingestion, data enrichment, health scoring, async jobs
 
 Both bundles include source maps for production debugging.
@@ -83,9 +83,21 @@ Required environment variables (validated by `npm run deploy:verify`):
 
 - **PostgreSQL:** 14+ (with extensions: uuid-ossp, pg_trgm, btree_gin)
 - **Redis:** 7+ (for BullMQ queue state)
-- **Node.js:** 20.10+ (esbuild bundles target node20)
+- **Node.js:** 24.19.0 with npm 11.9.0 (esbuild bundles target node24; the root manifest restricts Node to the supported 24.x series)
 - **Memory:** ≥512 MB (API), ≥256 MB (worker)
 - **CPU:** 1+ core recommended
+
+Use the canonical npm version before the frozen production installation:
+
+```bash
+npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
+npm ci --omit=dev --ignore-scripts
+```
+
+Browser scraping additionally requires an installed or mounted Chromium executable.
+Set `PUPPETEER_EXECUTABLE_PATH` to its absolute path as described in
+[browser runtime configuration](docs/configuration/browser-runtime.md).
+The Docker runner provisions Chromium explicitly.
 
 ### Startup Sequence
 
