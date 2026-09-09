@@ -64,7 +64,7 @@ describe('public Pages demo source', () => {
 
   it('builds the source query from issue_date, never the obsolete issued_date alias', () => {
     const sourceUrl = decodeURIComponent(
-      buildPublicDemoSourceUrl(parsePublicDemoReceipt(receipt)).replaceAll('+', ' ')
+      buildPublicDemoSourceUrl(parsePublicDemoReceipt(receipt)).replace(/\+/g, ' ')
     )
     expect(sourceUrl).toContain('issue_date IS NOT NULL')
     expect(sourceUrl).toContain('issue_date DESC')

@@ -34,7 +34,10 @@ Thank you for your interest in contributing to the UCC-MCA Intelligence Platform
 
 ### Dependency maintenance
 
-Use npm from the repository root for all `apps/*` and `packages/*` workspaces.
+Use Node 24.19.0 and npm 11.9.0 from the repository root for all `apps/*` and
+`packages/*` workspaces. Both package-manager declarations and maintenance CI use
+this exact npm version. Node 20 no longer satisfies the committed `concurrently`
+and Cloudflare `wrangler` engine requirements; the maintenance gates use Node 24.
 The root `package-lock.json` is their authoritative dependency graph;
 `cloudflare/package-lock.json` independently locks the edge application.
 Do not create additional pnpm, Yarn, or workspace-local lockfiles. Use
@@ -71,14 +74,25 @@ It evaluates the changed dependency graph; unchanged vulnerabilities still need
 their own repairs and a passing delta check is not a clean-bill-of-health audit.
 Use the workflow's tested checkout, PR head and lock hashes when reviewing results.
 
-CI Gate reports independent lint, server-test and build failures after
-installation succeeds. The standalone frontend CI workflow remains disabled in
-this pilot; local frontend test results are separate from hosted acceptance.
-TypeScript diagnostics remain advisory under #236;
-backend coverage and opt-in desktop/mobile execution are not acceptance claims.
-Checks running on a candidate branch are not proof of trusted workflow identity.
-Required-check configuration, review and merge authority remain separate gates;
-this pilot does not enable automatic approval or merging.
+CI Gate runs independent formatting, lint, TypeScript, frontend tests, server tests,
+scraper tests and production-build jobs. Cloudflare has its own frozen install and
+typecheck. Its aggregate `gate` fails if any lane fails, is skipped or is cancelled.
+The formerly advisory root TypeScript command is now `npm run typecheck` and must
+pass; its four test-helper typing errors are repaired without widening the compiler
+or suppressing diagnostics. The standalone frontend CI workflow remains disabled;
+frontend correctness is now exercised by the active CI Gate. Coverage thresholds,
+desktop/mobile execution and deployment are separate from these acceptance claims.
+
+The dependency validation artifact records exact base, head, tested checkout and
+workflow revisions; per-lockfile hashes; every dependency-entry change; and npm
+advisory observations for both the base and tested graph. A passing dependency-review
+step only establishes its own changed-dependency policy, not advisory closure. Audit
+transport/schema failures produce an explicit exception. Removed advisories are
+recorded as resolved observations, while unchanged vulnerabilities remain visible.
+The receipt is evidence for delegated review, never merge authorization. The trusted
+relay/governor must independently verify workflow/helper identity, actual check
+results, the live head/base and strict required-check enforcement before acceptance.
+Major updates, unusual graph/source changes and policy changes remain exceptions.
 
 ### Running the Application
 

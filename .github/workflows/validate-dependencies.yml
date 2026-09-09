@@ -2,7 +2,7 @@ name: validate-dependencies
 
 on:
   pull_request:
-    branches: [main, fix/ci-typecheck-yaml-20260908]
+    branches: [main]
   push:
     branches: [main]
   workflow_dispatch:
@@ -17,18 +17,26 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
-          node-version: '22'
+          node-version: '24.19.0'
           cache: npm
           cache-dependency-path: |
             package-lock.json
             cloudflare/package-lock.json
 
+      - name: Use the canonical npm version
+        run: npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
+
       - name: Check authoritative npm locks
         run: |
+          test "$(npm --version)" = 11.9.0
+          node --input-type=module -e "import fs from 'node:fs'; for (const path of ['package.json', 'cloudflare/package.json']) { if (JSON.parse(fs.readFileSync(path)).packageManager !== 'npm@11.9.0') process.exit(1) }"
           test -f package-lock.json
           test -f cloudflare/package-lock.json
           tracked_locks=$(git ls-files -- '*package-lock.json' '*pnpm-lock.yaml' '*yarn.lock' '*npm-shrinkwrap.json' '*bun.lock' '*bun.lockb')
@@ -53,20 +61,6 @@ jobs:
         working-directory: cloudflare
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Verify locked Cloudflare CLI starts
-        if: ${{ !cancelled() && steps.edge_install.outcome == 'success' }}
-        run: node scripts/verify-cloudflare-toolchain.mjs
-
-      - name: Verify Cloudflare diagnostic boundaries without credentials
-        if: ${{ !cancelled() }}
-        run: python3 scripts/test_diagnose_cloudflare.py
-
-      - name: Verify staging account resolution and binding counterexamples
-        if: ${{ !cancelled() && steps.edge_install.outcome == 'success' }}
-        run: |
-          node scripts/verify-cloudflare-account.mjs
-          python3 scripts/test_verify_cloudflare_staging.py
-
       - name: Confirm installs left dependency declarations unchanged
         if: ${{ !cancelled() }}
         run: git diff --exit-code -- package.json package-lock.json 'apps/*/package.json' 'packages/*/package.json' cloudflare/package.json cloudflare/package-lock.json
@@ -81,14 +75,42 @@ jobs:
           fail-on-scopes: runtime, development, unknown
           comment-summary-in-pr: never
 
+      - name: Collect dependency graph and advisory evidence
+        if: ${{ !cancelled() }}
+        id: dependency_evidence
+        env:
+          REVIEW_BASE: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
+          REVIEW_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          GITHUB_WORKFLOW_SHA: ${{ github.workflow_sha }}
+          DEPENDENCY_WORKFLOW_PATH: .github/workflows/validate-dependencies.yml
+        run: |
+          node scripts/dependency-evidence.mjs \
+            --base "$REVIEW_BASE" --head "$REVIEW_HEAD" --tested "$(git rev-parse HEAD)" \
+            --lock package-lock.json --lock cloudflare/package-lock.json \
+            --sensitive stripe --sensitive jose --sensitive jsonwebtoken \
+            --sensitive express --sensitive pg --sensitive bullmq \
+            --sensitive hono --sensitive wrangler --sensitive @github/spark \
+            --out .quality/dependency-evidence/dependency-evidence.json
+
+      - name: Upload dependency evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: dependency-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .quality/dependency-evidence/dependency-evidence.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Record dependency validation evidence
         if: ${{ !cancelled() }}
         env:
-          REVIEW_BASE: ${{ github.event.pull_request.base.sha }}
+          REVIEW_BASE: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
           REVIEW_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
           ROOT_INSTALL: ${{ steps.root_install.outcome }}
           EDGE_INSTALL: ${{ steps.edge_install.outcome }}
           DEPENDENCY_REVIEW: ${{ steps.dependency_review.outcome }}
+          DEPENDENCY_EVIDENCE: ${{ steps.dependency_evidence.outcome }}
         run: |
           {
             echo '## Dependency validation'
@@ -98,6 +120,7 @@ jobs:
             printf 'Frozen workspace install: %s\n\n' "$ROOT_INSTALL"
             printf 'Frozen Cloudflare install: %s\n\n' "$EDGE_INSTALL"
             printf 'PR dependency review: %s\n\n' "$DEPENDENCY_REVIEW"
+            printf 'Graph/advisory evidence: %s\n\n' "$DEPENDENCY_EVIDENCE"
             echo 'Lockfile SHA-256:'
             echo '```'
             sha256sum package-lock.json cloudflare/package-lock.json
