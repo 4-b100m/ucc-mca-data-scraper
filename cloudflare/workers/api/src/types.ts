@@ -18,6 +18,8 @@ export interface Env {
 
   // --- Non-secret vars (wrangler.toml [vars]) ---
   ENVIRONMENT: string
+  /** Exact source revision injected by the staging deployment workflow. */
+  DEPLOYMENT_SHA?: string
   /** Zero Trust team domain, e.g. "your-team.cloudflareaccess.com". */
   ACCESS_TEAM_DOMAIN: string
   /** Cloudflare Access application Audience (AUD) tag — the JWT `aud`. */
