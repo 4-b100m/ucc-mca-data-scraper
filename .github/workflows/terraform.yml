@@ -40,10 +40,10 @@ jobs:
   terraform-validate:
     name: Validate Terraform Configuration
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Terraform
         # TODO: SHA-pin this action (could not resolve offline). Pin hashicorp/setup-terraform to a full release SHA.
@@ -85,10 +85,10 @@ jobs:
     name: Security Scan (tfsec)
     runs-on: ubuntu-latest
     needs: terraform-validate
-    
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run tfsec
         # TODO: SHA-pin this action (could not resolve offline). Pin aquasecurity/tfsec-action to a full release SHA.
@@ -102,10 +102,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: terraform-validate
     if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'plan')
-    
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Terraform
         # TODO: SHA-pin this action (could not resolve offline). Pin hashicorp/setup-terraform to a full release SHA.
@@ -180,10 +180,10 @@ jobs:
     environment:
       name: production
       url: https://app.terraform.io/
-    
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Terraform
         # TODO: SHA-pin this action (could not resolve offline). Pin hashicorp/setup-terraform to a full release SHA.
@@ -243,7 +243,7 @@ jobs:
           echo "Destroy confirmed by ${{ github.actor }} on ref ${{ github.ref }}"
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Terraform
         # TODO: SHA-pin this action (could not resolve offline). Pin hashicorp/setup-terraform to a full release SHA.
